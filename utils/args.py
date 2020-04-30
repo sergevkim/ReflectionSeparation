@@ -8,8 +8,7 @@ def train_parse_args():
     parser.add_argument("--logs", default="./runs/0")  # TODO where must we use it?
     parser.add_argument("--batch_size", default=2, type=int, help="batch_size")
     parser.add_argument("--n_epochs", default=10, type=int, help="number of epochs")
-    parser.add_argument("--enable_cuda", action='store_true', help="disable CUDA")
-
+    parser.add_argument("--disable_cuda", action='store_true', help="disable CUDA")
     parser.add_argument("--save_model", action='store_true', help="save_model")
     parser.add_argument("--verbose", action='store_true', help="verbose")
 

@@ -41,7 +41,7 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         loss.backward()
         optimizer.step()
 
-        if args.verbose == True:
+        if args.verbose == True and batch_index % 100 == 0:
             print(epoch, batch_index, metrics_dict)
 
         if args.save_model and batch_index % 50 == 0:
@@ -58,10 +58,17 @@ def main():
 
     args = train_parse_args()
 
-    if args.enable_cuda and torch.cuda.is_available():
+    print(type(vars(args)))
+
+    for arg in vars(args):
+        print("{}: {}".format(arg, vars(args)[arg]))
+
+    if not args.disable_cuda and torch.cuda.is_available():
         device = torch.device('cuda')
+        print("CUDA is on")
     else:
         device = torch.device('cpu')
+        print("CUDA is off")
 
     if args.model == 'unet':
         model = UNet().to(device)
@@ -75,8 +82,6 @@ def main():
 
     subject_filenames = filter_filenames(paths=[str(p) for p in Path("./data/subject_images").glob("*.jpg")], limit=SUBJECT_SIZE)
     astigma_filenames = filter_filenames(paths=[str(p) for p in Path("./data/astigma_images").glob("*.jpg")], limit=ASTIGMA_SIZE)
-
-    print('!', subject_filenames)
 
     subject_filenames = np.array(MULTI_REFLECTION * subject_filenames)
     astigma_filenames = np.array(2 * MULTI_REFLECTION * astigma_filenames)
