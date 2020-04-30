@@ -5,11 +5,11 @@ from pathlib import Path
 def train_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="unet", type=str, help="model type")
-    parser.add_argument("--logs", default="./runs/0")  # TODO where must we use it?
-    parser.add_argument("--batch_size", default=2, type=int, help="batch_size")
-    parser.add_argument("--n_epochs", default=10, type=int, help="number of epochs")
-    parser.add_argument("--disable_cuda", action='store_true', help="disable CUDA")
-    parser.add_argument("--save_model", action='store_true', help="save_model")
+    parser.add_argument("--logs_path", default="")  # TODO where must we use it?
+    parser.add_argument("--batch-size", default=2, type=int, help="batch_size")
+    parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs")
+    parser.add_argument("--disable-cuda", action='store_true', help="disable CUDA")
+    parser.add_argument("--save-model", action='store_true', help="save_model")
     parser.add_argument("--verbose", action='store_true', help="verbose")
 
     return parser.parse_args()

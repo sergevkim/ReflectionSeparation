@@ -41,28 +41,27 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         loss.backward()
         optimizer.step()
 
-        if args.verbose == True and batch_index % 100 == 0:
+        if args.verbose:
             print(epoch, batch_index, metrics_dict)
 
-        if args.save_model and batch_index % 50 == 0:
+        if args.save_model:
+            torch.save(model.state_dict(), './weights/last.hdf5') #TODO paths for checkpoints
             torch.save({'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict()},
                         './weights/{}_v5_{}_{}.hdf5'.format(args.model, epoch, batch_index))
-            torch.save(model.state_dict(), './weights/tmp.hdf5')
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
 
 def main():
-    print(SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION, SUBJECT_TRAIN_SIZE, ASTIGMA_TRAIN_SIZE)
     np.random.seed(9)
 
     args = train_parse_args()
 
-    print(type(vars(args)))
-
+    print("====ARGS====")
     for arg in vars(args):
         print("{}: {}".format(arg, vars(args)[arg]))
+    print("============")
 
     if not args.disable_cuda and torch.cuda.is_available():
         device = torch.device('cuda')
@@ -74,7 +73,7 @@ def main():
     if args.model == 'unet':
         model = UNet().to(device)
     elif args.model == 'resnet':
-        model = ResNet().to(device) #TODO ResNet
+        model = ResNet().to(device) #TODO ResNet #TODO config file for resnet
     else:
         print("args.model must be unet or resnet")
         return 0
@@ -93,10 +92,22 @@ def main():
     astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.25, shuffle=True)
 
     #TODO validation dataset
-    train_loader_a = DataLoader(DummyDataset(subject_filenames_train), batch_size=args.batch_size, shuffle=True, drop_last=True)
-    train_loader_b = DataLoader(DummyDataset(astigma_filenames_train), batch_size=args.batch_size, shuffle=True, drop_last=True)
-    test_loader_a = DataLoader(DummyDataset(subject_filenames_test), batch_size=args.batch_size, shuffle=True, drop_last=True)
-    test_loader_b = DataLoader(DummyDataset(astigma_filenames_test), batch_size=args.batch_size, shuffle=True, drop_last=True)
+    train_loader_a = DataLoader(DummyDataset(subject_filenames_train),
+                                batch_size=args.batch_size,
+                                shuffle=True,
+                                drop_last=True)
+    train_loader_b = DataLoader(DummyDataset(astigma_filenames_train),
+                                batch_size=args.batch_size,
+                                shuffle=True,
+                                drop_last=True)
+    test_loader_a = DataLoader(DummyDataset(subject_filenames_test),
+                               batch_size=args.batch_size,
+                               shuffle=True,
+                               drop_last=True)
+    test_loader_b = DataLoader(DummyDataset(astigma_filenames_test),
+                               batch_size=args.batch_size,
+                               shuffle=True,
+                               drop_last=True)
 
     for epoch in range(args.n_epochs):
         print(epoch)

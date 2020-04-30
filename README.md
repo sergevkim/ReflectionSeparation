@@ -8,7 +8,8 @@
 
 2. Run training:
     ```bash
-    python scripts/train.py
+    python train.py
     ```
 
-
+TODO:
+- loadConfigFile
