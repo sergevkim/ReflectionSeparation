@@ -47,7 +47,7 @@ def prepare_astigma_images_dir(where, dir_name, url):
         image_file = open(image_filename, 'wb')
 
         image_url = 'https://www.hel-looks.com/big-photos/{}.jpg'.format(image_id)
-        image_response = requests.get(url, allow_redirects=True)
+        image_response = requests.get(image_url, allow_redirects=True)
         image_file.write(image_response.content)
 
 

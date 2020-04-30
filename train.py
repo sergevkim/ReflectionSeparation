@@ -54,6 +54,7 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
 
 
 def main():
+    print(SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION, SUBJECT_TRAIN_SIZE, ASTIGMA_TRAIN_SIZE)
     np.random.seed(9)
 
     args = train_parse_args()
