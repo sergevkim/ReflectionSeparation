@@ -16,7 +16,7 @@ def train_parse_args():
     parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str, help="astigma images path")
     parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str, help="weigths path")
     parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()), type=str, help="logs path")
-    parser.add_argument("--from-checkpoint", action="{}/weights/last.hdf5".format(Path.cwd()), type=str, help="last checkpoint")
+    parser.add_argument("--from-checkpoint", default="{}/weights/last.hdf5".format(Path.cwd()), type=str, help="last checkpoint")
 
     return parser.parse_args()
 
