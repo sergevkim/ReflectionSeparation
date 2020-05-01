@@ -24,7 +24,7 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
     model.train()
 
     for batch_index, (a, b) in enumerate(zip(train_loader_a, train_loader_b)):
-        batch = all_transform(a, b, device) # loss, metrics, loss_trans.item() - calc for backward pass
+        batch = all_transform(a, b)
 
         #loss, metrics_dict = model.forward_and_compute_all(batch, device=device)
         synthetic = batch['synthetic'].to(device)
@@ -50,7 +50,7 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         if args.verbose:
             print(epoch, batch_index, metrics_dict)
 
-        if args.save_model:
+        if args.save_model and batch_index % 20 == 0:
             torch.save(model.state_dict(), './weights/last.hdf5') #TODO paths for checkpoints
             torch.save({'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict()},

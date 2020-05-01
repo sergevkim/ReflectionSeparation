@@ -79,14 +79,14 @@ class DummyDataset:
                 'alpha': alpha}
 
 
-def all_transform(a, b, device):
+def all_transform(a, b):
     """
     :param a: batch of images from one domain
     :param b: batch of images from another domain
     :param device: 'cuda' or 'cpu'
     """
-    alpha_transmitted = b['alpha'][:, None, None, None] * a['img'].to(device)
-    reflected = b['reflected'].to(device)
+    alpha_transmitted = b['alpha'][:, None, None, None] * a['img']
+    reflected = b['reflected']
     synthetic = alpha_transmitted + reflected
 
     return {'synthetic': synthetic,
