@@ -16,7 +16,7 @@ import utils
 from utils.args import train_parse_args
 from utils.data import DummyDataset, filter_filenames, all_transform
 
-from constants import SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION, SUBJECT_TRAIN_SIZE, ASTIGMA_TRAIN_SIZE
+from constants import SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION
 
 
 def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch):
@@ -24,13 +24,19 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
     model.train()
 
     for batch_index, (a, b) in enumerate(zip(train_loader_a, train_loader_b)):
-        batch = all_transform(a, b, device) # loss, metrics, loss_trans.item() - calc for backward pass
+        batch = all_transform(a, b)
 
         #loss, metrics_dict = model.forward_and_compute_all(batch, device=device)
+        synthetic = batch['synthetic'].to(device)
+        alpha_transmitted = batch['alpha_transmitted'].to(device)
+        reflected = batch['reflected'].to(device)
 
-        output = model.forward(batch['synthetic'])
-        loss_transmission = mse_loss(output['transmission'], batch['alpha_transmitted'])
-        loss_reflection = mse_loss(output['reflection'], batch['reflected'])
+        output = model.forward(synthetic)
+        output_transmission = output['transmission'].to(device)
+        output_reflection = output['reflection'].to(device)
+
+        loss_transmission = mse_loss(output_transmission, alpha_transmitted)
+        loss_reflection = mse_loss(output_reflection, reflected)
 
         metrics_dict = {'mse_transmission': loss_transmission.item(),
                         'mse_reflection': loss_reflection.item()}
@@ -41,14 +47,15 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         loss.backward()
         optimizer.step()
 
-        if args.verbose:
-            print(epoch, batch_index, metrics_dict)
-
-        if args.save_model:
-            torch.save(model.state_dict(), './weights/last.hdf5') #TODO paths for checkpoints
-            torch.save({'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict()},
-                        './weights/{}_v5_{}_{}.hdf5'.format(args.model, epoch, batch_index))
+        if batch_index % 100 == 0:
+            if args.verbose:
+                print(epoch, batch_index, metrics_dict)
+            if args.save_model:
+                torch.save(model, "{}/model_inference.hdf5".format(args.weights_path))
+                torch.save({'model': model,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict()},
+                            "{}/last_model_optimizer.hdf5".format(args.weights_path))
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
@@ -71,17 +78,26 @@ def main():
         print("CUDA is off")
 
     if args.model == 'unet':
-        model = UNet().to(device)
+        model = UNet()
     elif args.model == 'resnet':
-        model = ResNet().to(device) #TODO ResNet #TODO config file for resnet
+        model = ResNet() #TODO ResNet #TODO config file for resnet
     else:
         print("args.model must be unet or resnet")
         return 0
 
+    model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
 
-    subject_filenames = filter_filenames(paths=[str(p) for p in Path("./data/subject_images").glob("*.jpg")], limit=SUBJECT_SIZE)
-    astigma_filenames = filter_filenames(paths=[str(p) for p in Path("./data/astigma_images").glob("*.jpg")], limit=ASTIGMA_SIZE)
+    if args.from_checkpoint != "":
+        checkpoint = torch.load(args.from_checkpoint)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
+    astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
+
+    subject_filenames = filter_filenames(paths=subject_filenames, limit=SUBJECT_SIZE)
+    astigma_filenames = filter_filenames(paths=astigma_filenames, limit=ASTIGMA_SIZE)
 
     subject_filenames = np.array(MULTI_REFLECTION * subject_filenames)
     astigma_filenames = np.array(2 * MULTI_REFLECTION * astigma_filenames)
@@ -109,9 +125,26 @@ def main():
                                shuffle=True,
                                drop_last=True)
 
+    #TODO
+    '''
+    train_loader_a, train_loader_b, test_loader_a, test_loader_b
+    = make_loaders(args.subject_images_path,
+                   args.astigma_images_path,
+                   args.batch_size,
+                   args.multi_reflection,
+                   args.subject_size,
+                   args.astigma_size)
+    '''
+
     for epoch in range(args.n_epochs):
         print(epoch)
         train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
+        if args.save_model:
+            torch.save({'model': model,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict()},
+                        "{}/{}_v5_e{}.hdf5".format(args.weights_path, args.model, epoch))
+
 
 
 if __name__ == "__main__":
