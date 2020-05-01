@@ -23,6 +23,13 @@ def train_parse_args():
 
 def eval_parse_args():
     parser = argparse.ArgumentParser()
+    #TODO
+
+    return parser.parse_args()
+
+
+def test_parse_args():
+    parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="{}/weights/unet_v5_e0.hdf5".format(Path.cwd()), type=str, help="model")
     parser.add_argument("--input", default="{}/data/basket/serge.jpg".format(Path.cwd()), type=str, help="image to handle")
     parser.add_argument("--output", default="{}/data/basket/output.jpg".format(Path.cwd()), type=str, help="output")
