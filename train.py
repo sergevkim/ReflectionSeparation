@@ -27,10 +27,16 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         batch = all_transform(a, b, device) # loss, metrics, loss_trans.item() - calc for backward pass
 
         #loss, metrics_dict = model.forward_and_compute_all(batch, device=device)
+        synthetic = batch['synthetic'].to(device)
+        alpha_transmitted = batch['alpha_transmitted'].to(device)
+        reflected = batch['reflected'].to(device)
 
-        output = model.forward(batch['synthetic'])
-        loss_transmission = mse_loss(output['transmission'], batch['alpha_transmitted'])
-        loss_reflection = mse_loss(output['reflection'], batch['reflected'])
+        output = model.forward(synthetic)
+        output_transmission = output['transmission'].to(device)
+        output_reflection = output['reflection'].to(device)
+
+        loss_transmission = mse_loss(output_transmission, alpha_transmitted)
+        loss_reflection = mse_loss(output_reflection, reflected)
 
         metrics_dict = {'mse_transmission': loss_transmission.item(),
                         'mse_reflection': loss_reflection.item()}
