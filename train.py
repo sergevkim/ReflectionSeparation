@@ -51,7 +51,11 @@ def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
             if args.verbose:
                 print(epoch, batch_index, metrics_dict)
             if args.save_model:
-                torch.save(model.state_dict(), "{}/last_model_only.hdf5".format(args.weights_path))
+                torch.save(model, "{}/model_inference.hdf5".format(args.weights_path))
+                torch.save({'model': model,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict()},
+                            "{}/last_model_optimizer.hdf5".format(args.weights_path))
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
@@ -74,25 +78,34 @@ def main():
         print("CUDA is off")
 
     if args.model == 'unet':
-        model = UNet().to(device)
+        model = UNet()
     elif args.model == 'resnet':
-        model = ResNet().to(device) #TODO ResNet #TODO config file for resnet
+        model = ResNet() #TODO ResNet #TODO config file for resnet
     else:
         print("args.model must be unet or resnet")
         return 0
 
+    model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
 
-    '''
+    if args.from_checkpoint != "":
+        checkpoint = torch.load(args.from_checkpoint)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    #'''
+    #!!!!!!!!!!!!!!!1STRANGE BUG M12SL HEEEEEEEEEEEEEEEEEELP
+
     subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
     subject_filenames = filter_filenames(paths=subject_filenames, limit=SUBJECT_SIZE)
     astigma_filenames = filter_filenames(paths=astigma_filenames, limit=ASTIGMA_SIZE)
+
     '''
     subject_filenames = filter_filenames(paths=[str(p) for p in Path(args.subject_images_path).glob("*.jpg")], limit=SUBJECT_SIZE)
     astigma_filenames = filter_filenames(paths=[str(p) for p in Path(args.astigma_images_path).glob("*.jpg")], limit=ASTIGMA_SIZE)
-
+    '''
     subject_filenames = np.array(MULTI_REFLECTION * subject_filenames)
     astigma_filenames = np.array(2 * MULTI_REFLECTION * astigma_filenames)
 
@@ -123,9 +136,10 @@ def main():
         print(epoch)
         train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch)
         if args.save_model:
-            torch.save({'model_state_dict': model.state_dict(),
+            torch.save({'model': model,
+                        'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict()},
-                        "{}/{}_v5_e{}.hdf5".format(args.weights_path, args.model, epoch, batch_index))
+                        "{}/{}_v5_e{}.hdf5".format(args.weights_path, args.model, epoch))
 
 
 
