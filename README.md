@@ -1,4 +1,4 @@
-# ReflectionSeparation
+# Reflection Separation
 
 1. Download data:
     ```bash
