@@ -16,7 +16,7 @@ import utils
 from utils.args import train_parse_args
 from utils.data import DummyDataset, filter_filenames, all_transform
 
-from constants import SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION, SUBJECT_TRAIN_SIZE, ASTIGMA_TRAIN_SIZE
+from constants import SUBJECT_SIZE, ASTIGMA_SIZE, MULTI_REFLECTION
 
 
 def train(args, model, device, train_loader_a, train_loader_b, optimizer, epoch):
@@ -93,19 +93,12 @@ def main():
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    #'''
-    #!!!!!!!!!!!!!!!1STRANGE BUG M12SL HEEEEEEEEEEEEEEEEEELP
-
     subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
     subject_filenames = filter_filenames(paths=subject_filenames, limit=SUBJECT_SIZE)
     astigma_filenames = filter_filenames(paths=astigma_filenames, limit=ASTIGMA_SIZE)
 
-    '''
-    subject_filenames = filter_filenames(paths=[str(p) for p in Path(args.subject_images_path).glob("*.jpg")], limit=SUBJECT_SIZE)
-    astigma_filenames = filter_filenames(paths=[str(p) for p in Path(args.astigma_images_path).glob("*.jpg")], limit=ASTIGMA_SIZE)
-    '''
     subject_filenames = np.array(MULTI_REFLECTION * subject_filenames)
     astigma_filenames = np.array(2 * MULTI_REFLECTION * astigma_filenames)
 
@@ -131,6 +124,17 @@ def main():
                                batch_size=args.batch_size,
                                shuffle=True,
                                drop_last=True)
+
+    #TODO
+    '''
+    train_loader_a, train_loader_b, test_loader_a, test_loader_b
+    = make_loaders(args.subject_images_path,
+                   args.astigma_images_path,
+                   args.batch_size,
+                   args.multi_reflection,
+                   args.subject_size,
+                   args.astigma_size)
+    '''
 
     for epoch in range(args.n_epochs):
         print(epoch)

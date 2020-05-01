@@ -21,9 +21,11 @@ def train_parse_args():
     return parser.parse_args()
 
 
-def test_parse_args():
+def eval_parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image_path", default="{}/data/basket/pexa.jpg".format(Path.cwd()), type=str, help="image to handle")
+    parser.add_argument("--model", default="{}/weights/unet_v5_e0.hdf5".format(Path.cwd()), type=str, help="model")
+    parser.add_argument("--input", default="{}/data/basket/serge.jpg".format(Path.cwd()), type=str, help="image to handle")
+    parser.add_argument("--output", default="{}/data/basket/output.jpg".format(Path.cwd()), type=str, help="output")
 
     return parser.parse_args()
 
@@ -31,9 +33,9 @@ def test_parse_args():
 def prepare_data_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--where", default="{}/data".format(Path.cwd()), type=str, help="where we want to place a dir with data")
-    parser.add_argument("--subject_images_dir_name", default="subject_images", type=str, help="a dir for subject images")
-    parser.add_argument("--astigma_images_dir_name", default="astigma_images", type=str, help="a dir for astigma images")
-    parser.add_argument("--tar_name", default="indoorCVPR_09.tar", type=str, help="tar name that was downloaded before (README.md)")
+    parser.add_argument("--subject-images-dir-name", default="subject_images", type=str, help="a dir for subject images")
+    parser.add_argument("--astigma-images-dir-name", default="astigma_images", type=str, help="a dir for astigma images")
+    parser.add_argument("--tar-name", default="indoorCVPR_09.tar", type=str, help="tar name that was downloaded before (README.md)")
     parser.add_argument("--url", default="https://www.hel-looks.com/archive/#20190810_13", type=str, help="url with astigma data")
 
     return parser.parse_args()
