@@ -83,11 +83,15 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
 
+    '''
     subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
     subject_filenames = filter_filenames(paths=subject_filenames, limit=SUBJECT_SIZE)
     astigma_filenames = filter_filenames(paths=astigma_filenames, limit=ASTIGMA_SIZE)
+    '''
+    subject_filenames = filter_filenames(paths=[str(p) for p in Path(args.subject_images_path).glob("*.jpg")], limit=SUBJECT_SIZE)
+    astigma_filenames = filter_filenames(paths=[str(p) for p in Path(args.astigma_images_path).glob("*.jpg")], limit=ASTIGMA_SIZE)
 
     subject_filenames = np.array(MULTI_REFLECTION * subject_filenames)
     astigma_filenames = np.array(2 * MULTI_REFLECTION * astigma_filenames)
