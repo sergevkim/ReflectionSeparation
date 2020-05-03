@@ -1,16 +1,11 @@
 import torch
 import torch.nn as nn
-import torch.functional as F
+import torch.nn.functional as F
 
 
-class ResBlock():
+class UNet(nn.Module):
     def __init__(self):
-        pass
-
-
-class ResNet(nn.Module):
-    def __init__(self):
-        super(ResNet, self).__init__()
+        super(UNet, self).__init__()
 
         self.conv_intro_1 = nn.Conv2d(3, 64, kernel_size=9, padding=4)
         self.conv_intro_2 = nn.Conv2d(64, 64, kernel_size=9, padding=4)
@@ -132,32 +127,33 @@ class ResNet(nn.Module):
         transmission = self.head_1(body_output)
         reflection = self.head_2(body_output)
 
-        return dict(transmission=transmission)
+        return {'transmission': transmission,
+                'reflection': reflection}
 
 
-    def compute_all(self, batch, device=None):
-        synthetic = batch['synthetic'].to(device)
-        alpha_transmitted = batch['alpha_transmitted'].to(device)
-        reflected = batch['reflected'].to(device)
-        output = self.forward(synthetic)
+    def compute_losses(self, batch):
+        #synthetic = batch['synthetic']
+        #alpha_transmitted = batch['alpha_transmitted']
+        #reflected = batch['reflected']
 
-        loss_trans = F.mse_loss(output['trans'], alpha_transmitted)
-        #TODO loss_refl = F.mse_loss(output['reflect'], reflected)
+        output = model.forward(batch['synthetic'])
+        #output_transmission = output['transmission']#.to(device)
+        #output_reflection = output['reflection']#.to(device)
 
-        #loss = loss_refl + loss_trans
-        loss = loss_trans
+        loss_transmission = F.mse_loss(output['transmission'], batch['trnsmission'])
+        loss_reflection = F.mse_loss(output['reflection'], batch['reflection'])
+        loss = loss_transmission + loss_reflection
+
 
         #TODO utils.scripts or other?
+        '''
         scripts.save(output['trans'], 'imgs')
         scripts.save(batch['synthetic'], 'syns')
         scripts.save(batch['alpha_transmitted'], 'alphas')
         scripts.save(batch['reflected'], 'refs')
+        '''
         # todo: add VGG L2
-        return dict(
-            loss=loss,
-            metrics=dict(
-                mse_trans=loss_trans.item(),
-                #mse_refl=loss_refl.item(),
-            )
-        )
+        return {'full': loss,
+                'transmission': loss_transmission,
+                'reflection': loss_reflection}
 

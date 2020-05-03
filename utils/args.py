@@ -7,16 +7,27 @@ def train_parse_args():
     parser.add_argument("--model", default="unet", type=str, help="model type, default: unet")
     parser.add_argument("--batch-size", default=2, type=int, help="batch_size, default: 2")
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
+    parser.add_argument("--version", default=5, type=int, help="version of the model, default: 5")
+
+    parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
+    parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")
+    parser.add_argument("--multi_reflection", default=8, type=int, help="multi reflection, default: 8")
 
     parser.add_argument("--disable-cuda", action='store_true', help="disable CUDA")
     parser.add_argument("--save-model", action='store_true', help="save model")
     parser.add_argument("--verbose", action='store_true', help="verbose")
+    parser.add_argument("--from-checkpoint", action='store_true', help="from checkpoint")
 
-    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()), type=str, help="subject images path")
-    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str, help="astigma images path")
-    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str, help="weigths path")
-    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()), type=str, help="logs path")
-    parser.add_argument("--from-checkpoint", default="{}/weights/last.hdf5".format(Path.cwd()), type=str, help="last checkpoint")
+    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()),
+                        type=str, help="subject images path")
+    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()),
+                        type=str, help="astigma images path")
+    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()),
+                        type=str, help="weigths path")
+    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()),
+                        type=str, help="logs path")
+    parser.add_argument("--checkpoint-path", default="{}/weights/last.hdf5".format(Path.cwd()),
+                        type=str, help="last checkpoint")
 
     return parser.parse_args()
 
@@ -30,9 +41,12 @@ def eval_parse_args():
 
 def test_parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="{}/weights/unet_v5_e0.hdf5".format(Path.cwd()), type=str, help="model")
-    parser.add_argument("--input", default="{}/data/basket/serge.jpg".format(Path.cwd()), type=str, help="image to handle")
-    parser.add_argument("--output", default="{}/data/basket/output.jpg".format(Path.cwd()), type=str, help="output")
+    parser.add_argument("--model", default="{}/weights/unet_v5_e0.hdf5".format(Path.cwd()),
+                        type=str, help="model")
+    parser.add_argument("--input", default="{}/data/basket/serge.jpg".format(Path.cwd()),
+                        type=str, help="image to handle")
+    parser.add_argument("--output", default="{}/data/basket/output.jpg".format(Path.cwd()),
+                        type=str, help="output")
 
     return parser.parse_args()
 
@@ -47,3 +61,7 @@ def prepare_data_parse_args():
 
     return parser.parse_args()
 
+
+#TODO
+def handle_args():
+    pass

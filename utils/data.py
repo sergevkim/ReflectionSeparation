@@ -1,6 +1,48 @@
+from pathlib import Path
+from tqdm.auto import tqdm
+
 import cv2
 import numpy as np
-from tqdm.auto import tqdm
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+
+
+def make_dataloaders(args):
+    subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
+    astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
+
+    subject_filenames = filter_filenames(paths=subject_filenames, limit=args.subject_limit)
+    astigma_filenames = filter_filenames(paths=astigma_filenames, limit=args.astigma_limit)
+
+    subject_filenames = np.array(args.multi_reflection * subject_filenames)
+    astigma_filenames = np.array(2 * args.multi_reflection * astigma_filenames)
+
+    #print("There are {} subject and {} astigma files".format(len(subject_filenames), len(astigma_filenames)))
+
+    subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.25, shuffle=True)
+    astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.25, shuffle=True)
+
+    train_loader_subject = DataLoader(DummyDataset(subject_filenames_train),
+                                      batch_size=args.batch_size,
+                                      shuffle=True,
+                                      drop_last=True)
+    train_loader_astigma = DataLoader(DummyDataset(astigma_filenames_train),
+                                      batch_size=args.batch_size,
+                                      shuffle=True,
+                                      drop_last=True)
+    test_loader_subject = DataLoader(DummyDataset(subject_filenames_test),
+                                     batch_size=args.batch_size,
+                                     shuffle=True,
+                                     drop_last=True)
+    test_loader_astigma = DataLoader(DummyDataset(astigma_filenames_test),
+                                     batch_size=args.batch_size,
+                                     shuffle=True,
+                                     drop_last=True)
+
+    return {"train_loader_subject": train_loader_subject,
+            "train_loader_astigma": train_loader_astigma,
+            "test_loader_astigma": test_loader_astigma,
+            "test_loader_astigma": test_loader_astigma}
 
 
 def filter_filenames(paths, limit=None):
@@ -21,7 +63,7 @@ def filter_filenames(paths, limit=None):
     return good_paths
 
 
-def random_crop(img, w=None, h=None):
+def random_crop(img, w=None, h=None): #TODO central crop!
     img_w, img_h, img_c = img.shape
     if w is None and h is None:
         w = h = min(img_w, img_h)
@@ -58,7 +100,7 @@ class DummyDataset:
 
         resized = cv2.resize(img, (128, 128))
         random_cropped = random_crop(img, 128, 128)
-        alpha = np.float32(np.random.uniform(0.75, 0.8))
+        alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO more values
 
         kernel = np.zeros((self.reflection_size, self.reflection_size))
         x1, y1, x2, y2 = np.random.randint(0, self.reflection_size, size=4)
@@ -74,24 +116,24 @@ class DummyDataset:
         """
         reflected = cv2.filter2D(random_cropped, -1, kernel)
 
-        return {'img': np.transpose(resized, (2, 0, 1)),
-                'reflected': np.transpose(reflected, (2, 0, 1)),
+        return {'image': np.transpose(resized, (2, 0, 1)),
+                'reflection': np.transpose(reflected, (2, 0, 1)),
                 'alpha': alpha}
 
 
-def all_transform(a, b):
+def all_transform(subject, astigma):
     """
-    :param a: batch of images from one domain
-    :param b: batch of images from another domain
+    :param subject: batch of images from one domain
+    :param astigma: batch of images from another domain
     :param device: 'cuda' or 'cpu'
     """
-    alpha_transmitted = b['alpha'][:, None, None, None] * a['img']
-    reflected = b['reflected']
-    synthetic = alpha_transmitted + reflected
+    transmission = astigma['alpha'][:, None, None, None] * subject['image'] #TODO astigma['alpha']??????
+    reflection = astigma['reflection']
+    synthetic = alpha_transmitted + reflection
 
     return {'synthetic': synthetic,
-            'alpha_transmitted': alpha_transmitted,
-            'reflected': reflected}
+            'transmission': transmission,
+            'reflection': reflected}
 
 
 

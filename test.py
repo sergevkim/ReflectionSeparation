@@ -60,8 +60,10 @@ def main():
 
     print(image.shape, rgb_image[0].shape)
     output = model(torch.Tensor(rgb_image))['transmission']
+    print(output)
     ready_img_2 = np.transpose(output[0].detach().cpu().numpy(), (1, 2, 0))
     cv2.imwrite(args.output, ready_img_2)
+    print(mse_loss(output, torch.Tensor(rgb_image)))
 
 
 if __name__ == "__main__":
