@@ -7,7 +7,7 @@ import torch
 from models.UNet import UNet
 from models.ResNet import ResNet
 
-from utils.args import train_parse_args
+from utils.args import train_parse_args, handle_args
 from utils.data import DummyDataset, make_dataloaders, filter_filenames, all_transform
 
 
@@ -48,40 +48,22 @@ def main():
 
     args = train_parse_args()
 
-    for arg in vars(args):
-        print("{}: {}".format(arg, vars(args)[arg]))
+    metaparameters = handle_args(args)
 
-    if not args.disable_cuda and torch.cuda.is_available():
-        device = torch.device('cuda')
-        print("CUDA is on")
-    else:
-        device = torch.device('cpu')
-        print("CUDA is off")
-
-    if not args.from_checkpoint:
-        if args.model == 'unet':
-            model = UNet()
-        elif args.model == 'resnet':
-            model = ResNet() #TODO ResNet
-        else:
-            print("args.model must be unet or resnet")
-            return 0
-        model.to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-        epoch_start = 0
-    else:
-        checkpoint = torch.load(args.checkpoint_path)
-        model = checkpoint['model']
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        epoch_start = checkpoint['epoch']
-
-    #handle_args(args) -> device, model, optimizer, epoch_start
+    device = metaparameters['device']
+    model = metaparameters['model']
+    optimizer = metaparameters['optimizer']
+    epoch_start = metaparameters['epoch_start']
 
     dataloaders = make_dataloaders(args)
 
+    train_loader_subject = dataloaders['train_loader_subject']
+    train_loader_astigma = dataloaders['train_loader_astigma']
+    test_loader_subject = dataloaders['test_loader_subject']
+    test_loader_astigma = dataloaders['test_loader_astigma']
+
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
-        train(args, model, dataloaders['train_loader_subject'], dataloaders['train_loader_astigma'], optimizer, device, epoch)
+        train(args, model, train_loader_subject, train_loader_astigma, optimizer, device, epoch)
         if args.save_model:
             torch.save({'model': model,
                         'model_state_dict': model.state_dict(),

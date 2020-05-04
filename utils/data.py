@@ -39,10 +39,10 @@ def make_dataloaders(args):
                                      shuffle=True,
                                      drop_last=True)
 
-    return {"train_loader_subject": train_loader_subject,
-            "train_loader_astigma": train_loader_astigma,
-            "test_loader_astigma": test_loader_astigma,
-            "test_loader_astigma": test_loader_astigma}
+    return {'train_loader_subject': train_loader_subject,
+            'train_loader_astigma': train_loader_astigma,
+            'test_loader_astigma': test_loader_astigma,
+            'test_loader_astigma': test_loader_astigma}
 
 
 def filter_filenames(paths, limit=None):

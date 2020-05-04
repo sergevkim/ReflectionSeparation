@@ -18,16 +18,16 @@ def train_parse_args():
     parser.add_argument("--verbose", action='store_true', help="verbose")
     parser.add_argument("--from-checkpoint", action='store_true', help="from checkpoint")
 
-    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()),
-                        type=str, help="subject images path")
-    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()),
-                        type=str, help="astigma images path")
-    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()),
-                        type=str, help="weigths path")
-    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()),
-                        type=str, help="logs path")
-    parser.add_argument("--checkpoint-path", default="{}/weights/last.hdf5".format(Path.cwd()),
-                        type=str, help="last checkpoint")
+    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()), type=str,
+                        help="subject images path")
+    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str,
+                        help="astigma images path")
+    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str,
+                        help="weigths path")
+    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()), type=str,
+                        help="logs path")
+    parser.add_argument("--checkpoint-path", default="{}/weights/last.hdf5".format(Path.cwd()), type=str,
+                        help="last checkpoint")
 
     return parser.parse_args()
 
@@ -62,6 +62,37 @@ def prepare_data_parse_args():
     return parser.parse_args()
 
 
-#TODO
-def handle_args():
-    pass
+def handle_args(args):
+    for arg in vars(args):
+        print("{}: {}".format(arg, vars(args)[arg]))
+
+    if not args.disable_cuda and torch.cuda.is_available():
+        device = torch.device('cuda')
+        print("CUDA is on")
+    else:
+        device = torch.device('cpu')
+        print("CUDA is off")
+
+    if not args.from_checkpoint:
+        if args.model == 'unet':
+            model = UNet()
+        elif args.model == 'resnet':
+            model = ResNet() #TODO ResNet
+        else:
+            print("args.model must be unet or resnet")
+            return 0
+        model.to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+        epoch_start = 0
+    else:
+        checkpoint = torch.load(args.checkpoint_path)
+        model = checkpoint['model']
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch_start = checkpoint['epoch']
+
+    return {'device': device,
+            'model': model,
+            'optimizer': optimizer,
+            'epoch_start': epoch_start}#TODO random seed
+
