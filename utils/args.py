@@ -7,9 +7,9 @@ import torch
 def train_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="unet", type=str, help="model type, default: unet")
-    parser.add_argument("--batch-size", default=8, type=int, help="batch_size, default: 2")
+    parser.add_argument("--batch-size", default=8, type=int, help="batch_size, default: 8")
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
-    parser.add_argument("--version", default=6, type=int, help="version of the model, default: 5")
+    parser.add_argument("--version", default=6, type=int, help="version of the model, default: 6")
 
     parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
     parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")
@@ -21,15 +21,15 @@ def train_parse_args():
     parser.add_argument("--from-checkpoint", action='store_true', help="from checkpoint")
 
     parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()), type=str,
-                        help="subject images path")
+                        help="subject images path, default: ./data/subject_images")
     parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str,
-                        help="astigma images path")
+                        help="astigma images path, default: ./data/astigma_images")
     parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str,
-                        help="weigths path")
-    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()), type=str,
-                        help="logs path")
+                        help="weigths path, default: ./weights")
+    parser.add_argument("--logs-path", default="./logs".format(Path.cwd()), type=str,
+                        help="logs path, default: ./logs")
     parser.add_argument("--checkpoint-path", default="{}/weights/last.hdf5".format(Path.cwd()), type=str,
-                        help="last checkpoint")
+                        help="last checkpoint, default: ./weights/last.hdf5")
 
     return parser.parse_args()
 
