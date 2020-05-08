@@ -54,7 +54,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device):
 
         if batch_index % 100 == 0:
             if args.verbose:
-                print("e{}.b{}:".format(epoch, batch_index))
+                print("b{}:".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(), losses['reflection'].item()))
 
     print("Validation ended in {} seconds".format(time.time() - time_start))
@@ -91,6 +91,7 @@ def main():
     test_loader_reflection = dataloaders['test_loader_reflection']
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
+        print("Epoch {}".format(epoch))
         val(args, model, test_loader_transmission, test_loader_reflection, device)
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
