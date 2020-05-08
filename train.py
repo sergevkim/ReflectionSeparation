@@ -15,10 +15,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     time_start = time.time()
     model.train()
 
-    train_loader_full = zip(train_loader_transmission, train_loader_reflection)
+    dataloader_full = zip(train_loader_transmission, dataloader_reflection)
 
-    for batch_index, (subject, astigma) in enumerate(train_loader_full):
-        batch = all_transform(subject, astigma, device) #TODO remove all_transform and replace it with reflection + tranmission
+    for batch_index, (transmission, reflection) in enumerate(dataloader_full):
+        batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
         losses = model.compute_losses(batch)
         loss = losses['full']
 
@@ -41,7 +41,22 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
 
-#TODO def val(args, model, test_loaders_subject, test_loader_astigma, device):
+def val(args, model, test_loaders_transmission, test_loader_reflection, device):
+    time_start = time.time()
+    model.eval()
+
+    dataloader_full = zip(test_loader_transmission, test_loader_reflection)
+
+    for batch_index, (transmission, reflection) in enumerate(dataloader_full):
+        batch = all_transform(transmission, reflection)
+        losses = model.compute_losses(batch)
+
+        if batch_index % 100 == 0:
+            if args.verbose:
+                print("e{}.b{}:".format(epoch, batch_index))
+                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(), losses['reflection'].item()))
+
+    print("Validation ended in {} seconds".format(time.time() - time_start))
 
 
 def main():
@@ -74,7 +89,7 @@ def main():
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
-        #val(args, model, test_loader_subject, test_loader_astigma)
+        val(args, model, test_loader_transmission, test_loader_reflection, device)
         if args.save_model:
             torch.save({'model': model,
                         'model_state_dict': model.state_dict(),
