@@ -34,13 +34,6 @@ def train_parse_args():
     return parser.parse_args()
 
 
-def eval_parse_args():
-    parser = argparse.ArgumentParser()
-    #TODO
-
-    return parser.parse_args()
-
-
 def test_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="{}/weights/unet_v5_e0.hdf5".format(Path.cwd()),
@@ -49,6 +42,8 @@ def test_parse_args():
                         type=str, help="image to handle")
     parser.add_argument("--output", default="{}/data/basket/output.jpg".format(Path.cwd()),
                         type=str, help="output")
+    parser.add_argument("--basket-dir", default="{}/data/basket/".format(Path.cwd()),
+                        type=str, help="basket dir")
 
     return parser.parse_args()
 

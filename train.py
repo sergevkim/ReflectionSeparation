@@ -29,7 +29,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         if batch_index % 100 == 0:
             if args.verbose:
                 print("e{}.b{}:".format(epoch, batch_index))
-                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(), losses['reflection'].item()))
+                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(),
+                                                    losses['reflection'].item()))
+                print("psnr_t: {}, psnr_r: {}".format(10 * np.log10(1 / losses['transmission'].item()),
+                                                      10 * np.log10(1 / losses['reflection'].item())))
             if args.save_model:
                 torch.save({'model': model,
                             'optimizer': optimizer,
@@ -55,7 +58,10 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device):
         if batch_index % 100 == 0:
             if args.verbose:
                 print("b{}:".format(batch_index))
-                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(), losses['reflection'].item()))
+                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(),
+                                                    losses['reflection'].item()))
+                print("psnr_t: {}, psnr_r: {}".format(10 * np.log10(1 / losses['transmission'].item()),
+                                                      10 * np.log10(1 / losses['reflection'].item())))
 
     print("Validation ended in {} seconds".format(time.time() - time_start))
 
