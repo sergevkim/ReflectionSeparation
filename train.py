@@ -32,11 +32,12 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
                 print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(), losses['reflection'].item()))
             if args.save_model:
                 torch.save({'model': model,
+                            'optimizer': optimizer,
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict(),
                             'epoch': epoch
                            },
-                           "{}/last_model_optimizer.hdf5".format(args.weights_path))
+                           "{}/last_checkpoint.hdf5".format(args.weights_path))
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
@@ -48,7 +49,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device):
     dataloader_full = zip(test_loader_transmission, test_loader_reflection)
 
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
-        batch = all_transform(transmission, reflection)
+        batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
         losses = model.compute_losses(batch)
 
         if batch_index % 100 == 0:
@@ -94,6 +95,7 @@ def main():
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
             torch.save({'model': model,
+                        'optimizer': optimizer,
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'epoch': epoch
