@@ -128,7 +128,8 @@ class UNet(nn.Module):
         reflection = self.head_2(body_output)
 
         return {'transmission': transmission,
-                'reflection': reflection}
+                'reflection': reflection
+               }
 
 
     def compute_losses(self, batch):
@@ -136,11 +137,11 @@ class UNet(nn.Module):
         #alpha_transmitted = batch['alpha_transmitted']
         #reflected = batch['reflected']
 
-        output = model.forward(batch['synthetic'])
+        output = self.forward(batch['synthetic'])
         #output_transmission = output['transmission']#.to(device)
         #output_reflection = output['reflection']#.to(device)
 
-        loss_transmission = F.mse_loss(output['transmission'], batch['trnsmission'])
+        loss_transmission = F.mse_loss(output['transmission'], batch['transmission'])
         loss_reflection = F.mse_loss(output['reflection'], batch['reflection'])
         loss = loss_transmission + loss_reflection
 
@@ -155,5 +156,6 @@ class UNet(nn.Module):
         # todo: add VGG L2
         return {'full': loss,
                 'transmission': loss_transmission,
-                'reflection': loss_reflection}
+                'reflection': loss_reflection
+               }
 

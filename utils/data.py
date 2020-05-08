@@ -22,27 +22,28 @@ def make_dataloaders(args):
     subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.25, shuffle=True)
     astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.25, shuffle=True)
 
-    train_loader_subject = DataLoader(DummyDataset(subject_filenames_train),
-                                      batch_size=args.batch_size,
-                                      shuffle=True,
-                                      drop_last=True)
-    train_loader_astigma = DataLoader(DummyDataset(astigma_filenames_train),
-                                      batch_size=args.batch_size,
-                                      shuffle=True,
-                                      drop_last=True)
-    test_loader_subject = DataLoader(DummyDataset(subject_filenames_test),
-                                     batch_size=args.batch_size,
-                                     shuffle=True,
-                                     drop_last=True)
-    test_loader_astigma = DataLoader(DummyDataset(astigma_filenames_test),
-                                     batch_size=args.batch_size,
-                                     shuffle=True,
-                                     drop_last=True)
+    train_loader_transmission = DataLoader(DummyDataset(subject_filenames_train),
+                                           batch_size=args.batch_size,
+                                           shuffle=True,
+                                           drop_last=True)
+    train_loader_reflection = DataLoader(DummyDataset(astigma_filenames_train),
+                                         batch_size=args.batch_size,
+                                         shuffle=True,
+                                         drop_last=True)
+    test_loader_transmission = DataLoader(DummyDataset(subject_filenames_test),
+                                          batch_size=args.batch_size,
+                                          shuffle=True,
+                                          drop_last=True)
+    test_loader_reflection = DataLoader(DummyDataset(astigma_filenames_test),
+                                        batch_size=args.batch_size,
+                                        shuffle=True,
+                                        drop_last=True)
 
-    return {'train_loader_subject': train_loader_subject,
-            'train_loader_astigma': train_loader_astigma,
-            'test_loader_astigma': test_loader_astigma,
-            'test_loader_astigma': test_loader_astigma}
+    return {'train_loader_transmission': train_loader_transmission,
+            'train_loader_reflection': train_loader_reflection,
+            'test_loader_transmission': test_loader_transmission,
+            'test_loader_reflection': test_loader_reflection
+           }
 
 
 def filter_filenames(paths, limit=None):
@@ -118,10 +119,11 @@ class DummyDataset:
 
         return {'image': np.transpose(resized, (2, 0, 1)),
                 'reflection': np.transpose(reflected, (2, 0, 1)),
-                'alpha': alpha}
+                'alpha': alpha
+               }
 
 
-def all_transform(subject, astigma):
+def all_transform(subject, astigma, device):
     """
     :param subject: batch of images from one domain
     :param astigma: batch of images from another domain
@@ -129,11 +131,12 @@ def all_transform(subject, astigma):
     """
     transmission = astigma['alpha'][:, None, None, None] * subject['image'] #TODO astigma['alpha']??????
     reflection = astigma['reflection']
-    synthetic = alpha_transmitted + reflection
+    synthetic = transmission + reflection
 
-    return {'synthetic': synthetic,
-            'transmission': transmission,
-            'reflection': reflected}
+    return {'synthetic': synthetic.to(device),
+            'transmission': transmission.to(device),
+            'reflection': reflection.to(device)
+           }
 
 
 
