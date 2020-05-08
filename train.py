@@ -41,7 +41,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
 
-def val(args, model, test_loaders_transmission, test_loader_reflection, device):
+def val(args, model, test_loader_transmission, test_loader_reflection, device):
     time_start = time.time()
     model.eval()
 

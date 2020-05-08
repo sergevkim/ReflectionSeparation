@@ -28,6 +28,21 @@ def test(args, model, image, device):
     output = model(image)
 
 
+def process(self, img):
+    img = img.transpose((2, 0, 1))[None, ...].astype(np.float32) / 255.0
+    with torch.no_grad():
+        x = torch.tensor(img)
+        out = self.model(x)["transmission"]
+        #out = self.model(x)["reflection"]
+        out = out.data.numpy()
+
+    #print(torch.nn.functional.mse_loss(torch.Tensor(img), torch.Tensor(out)).item())
+    #out = out.data.numpy()
+
+    out = (255.0 * out[0, ...]).clip(0, 255).astype(np.uint8)
+    return out.transpose((1, 2, 0))
+
+
 def main():
     np.random.seed(9)
 
