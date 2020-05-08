@@ -73,6 +73,8 @@ def main():
         checkpoint = torch.load(args.checkpoint_path)
         model = checkpoint['model'].to(device)
         model.load_state_dict(checkpoint['model_state_dict'])
+        #optimizer = checkpoint['optimizer']
+        optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch_start = checkpoint['epoch']
     else:
