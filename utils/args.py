@@ -7,9 +7,9 @@ import torch
 def train_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="unet", type=str, help="model type, default: unet")
-    parser.add_argument("--batch-size", default=2, type=int, help="batch_size, default: 2")
+    parser.add_argument("--batch-size", default=8, type=int, help="batch_size, default: 2")
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
-    parser.add_argument("--version", default=5, type=int, help="version of the model, default: 5")
+    parser.add_argument("--version", default=6, type=int, help="version of the model, default: 5")
 
     parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
     parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")

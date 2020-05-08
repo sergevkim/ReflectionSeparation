@@ -15,7 +15,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     time_start = time.time()
     model.train()
 
-    dataloader_full = zip(train_loader_transmission, dataloader_reflection)
+    dataloader_full = zip(train_loader_transmission, train_loader_reflection)
 
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
         batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
