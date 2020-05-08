@@ -79,7 +79,7 @@ def handle_args(args):
         if args.model == 'unet':
             model = UNet()
         elif args.model == 'resnet':
-            model = ResNet() #TODO ResNet
+            model = ResNet()
         else:
             print("args.model must be unet or resnet")
             return 0
@@ -96,5 +96,5 @@ def handle_args(args):
     return {'device': device,
             'model': model,
             'optimizer': optimizer,
-            'epoch_start': epoch_start}#TODO random seed
+            'epoch_start': epoch_start}
 

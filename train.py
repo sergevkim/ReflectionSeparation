@@ -7,7 +7,7 @@ import torch
 from models.UNet import UNet
 from models.ResNet import ResNet
 
-from utils.args import train_parse_args, handle_args
+from utils.args import train_parse_args
 from utils.data import DummyDataset, make_dataloaders, filter_filenames, all_transform
 
 
@@ -88,8 +88,8 @@ def main():
     test_loader_reflection = dataloaders['test_loader_reflection']
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
-        train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         val(args, model, test_loader_transmission, test_loader_reflection, device)
+        train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
             torch.save({'model': model,
                         'model_state_dict': model.state_dict(),
