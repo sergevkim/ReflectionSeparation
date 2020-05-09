@@ -19,8 +19,8 @@ def make_dataloaders(args):
 
     #print("There are {} subject and {} astigma files".format(len(subject_filenames), len(astigma_filenames)))
 
-    subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.25, shuffle=True)
-    astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.25, shuffle=True)
+    subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.1, shuffle=True)
+    astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.1, shuffle=True)
 
     train_loader_transmission = DataLoader(DummyDataset(subject_filenames_train),
                                            batch_size=args.batch_size,

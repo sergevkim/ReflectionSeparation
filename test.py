@@ -51,6 +51,8 @@ def main():
     basket_out_filenames = [str(p)[:-4] + "_out" + ".jpg" for p in Path(args.basket_dir).glob("*.jpg")]
 
     for i, filename in enumerate(basket_filenames):
+        if filename[-7:] == "out.jpg":
+            continue
         print(i, filename)
         image = cv2.imread(filename)
         out = process(model, image)
