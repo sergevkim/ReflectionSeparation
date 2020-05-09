@@ -3,11 +3,9 @@ from pathlib import Path
 import time
 
 import numpy as np
-#from sklearn.model_selection import train_test_split
 
 import torch
 from torch.nn.functional import mse_loss
-#from torch.utils.data import DataLoader
 
 import cv2
 
@@ -16,7 +14,6 @@ from models.ResNet import ResNet
 
 import utils
 from utils.args import test_parse_args
-#from utils.data import DummyDataset, filter_filenames, all_transform
 
 
 def test(args, model, image, device):
@@ -43,6 +40,7 @@ def main():
 
     args = test_parse_args()
 
+
     ckpt = torch.load(args.model, map_location=torch.device('cpu'))
     model = ckpt['model']
     model.load_state_dict(ckpt['model_state_dict'])
@@ -58,16 +56,6 @@ def main():
         out = process(model, image)
         cv2.imwrite(basket_out_filenames[i], out)
 
-    '''
-    rgb_image = [np.transpose(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), (2, 0, 1))]
-
-    print(image.shape, rgb_image[0].shape)
-    output = model(torch.Tensor(rgb_image))['transmission']
-    print(output)
-    ready_img_2 = np.transpose(output[0].detach().cpu().numpy(), (1, 2, 0))
-    cv2.imwrite(args.output, ready_img_2)
-    print(mse_loss(output, torch.Tensor(rgb_image)))
-    '''
 
 if __name__ == "__main__":
     main()

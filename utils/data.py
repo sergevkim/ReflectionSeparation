@@ -138,5 +138,3 @@ def all_transform(subject, astigma, device):
             'reflection': reflection.to(device)
            }
 
-
-
