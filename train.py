@@ -33,7 +33,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         losses = model.compute_losses(batch)
 
         loss = losses['full']
-        mse_t = losses['tranmission'].item()
+        mse_t = losses['transmission'].item()
         mse_r = losses['reflection'].item()
         psnr_t = 10 * np.log10(1 / mse_t)
         psnr_r = 10 * np.log10(1 / mse_r)
@@ -87,7 +87,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
         batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
         losses = model.compute_losses(batch)
 
-        mse_t = losses['tranmission'].item()
+        mse_t = losses['transmission'].item()
         mse_r = losses['reflection'].item()
         psnr_t = 10 * np.log10(1 / mse_t)
         psnr_r = 10 * np.log10(1 / mse_r)
