@@ -19,6 +19,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
         batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
+
+        #alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO temperature function
+        #synthetic = alpha * transmission + (1 - alpha) * reflection
+
         losses = model.compute_losses(batch)
         loss = losses['full']
 
@@ -28,47 +32,65 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
         if batch_index % 100 == 0:
             if args.verbose:
-                print("e{}.b{}:".format(epoch, batch_index))
+                print("EPOCH {}, BATCH {}".format(epoch, batch_index))
                 print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(),
                                                     losses['reflection'].item()))
                 print("psnr_t: {}, psnr_r: {}".format(10 * np.log10(1 / losses['transmission'].item()),
                                                       10 * np.log10(1 / losses['reflection'].item())))
             if args.save_model:
-                torch.save({'model': model,
-                            'optimizer': optimizer,
-                            'model_state_dict': model.state_dict(),
-                            'optimizer_state_dict': optimizer.state_dict(),
-                            'epoch': epoch
-                           },
-                           "{}/last_checkpoint.hdf5".format(args.weights_path))
+                torch.save({
+                    'model': model,
+                    'optimizer': optimizer,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'epoch': epoch,
+                    },
+                    "{}/last_checkpoint.hdf5".format(args.weights_path))
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
 
-def val(args, model, test_loader_transmission, test_loader_reflection, device):
+def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):
     time_start = time.time()
     model.eval()
 
     dataloader_full = zip(test_loader_transmission, test_loader_reflection)
 
+    metrics = {
+        'mean_mse_t': [],
+        'mean_mse_r': [],
+        'mean_psnr_t': [],
+        'mean_psnr_r': [],
+    }
+
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
         batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
         losses = model.compute_losses(batch)
 
+        mse_t = losses['tranmission'].item()
+        mse_r = losses['reflection'].item()
+        psnr_t = 10 * np.log10(1 / mse_t)
+        psnr_r = 10 * np.log10(1 / mse_r)
+
+        metrics['mean_mse_t'].append(mse_t)
+        metrics['mean_mse_r'].append(mse_r)
+        metrics['mean_psnr_t'].append(psnr_t)
+        metrics['mean_psnr_r'].append(psnr_r)
+
         if batch_index % 100 == 0:
             if args.verbose:
-                print("b{}:".format(batch_index))
-                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(),
-                                                    losses['reflection'].item()))
-                print("psnr_t: {}, psnr_r: {}".format(10 * np.log10(1 / losses['transmission'].item()),
-                                                      10 * np.log10(1 / losses['reflection'].item())))
+                print("EPOCH {}, BATCH {}".format(epoch, batch_index))
+                print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
+                print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
 
-    print("Validation ended in {} seconds".format(time.time() - time_start))
+    print("Validation ended in {} seconds, mean mse_t: {}, mean psnr_t: {}".format(
+        time.time() - time_start,
+        sum(metrics['mean_mse_t']) / len(metrics['mean_mse_t']),
+        sum(metrics['mean_psnr_t']) / len(metrics['mean_psnr_r'])))
 
 
 def main():
     np.random.seed(9)
-
     args = train_parse_args()
 
     if not args.disable_cuda and torch.cuda.is_available():
@@ -79,16 +101,17 @@ def main():
     if args.from_checkpoint:
         checkpoint = torch.load(args.checkpoint_path)
         model = checkpoint['model'].to(device)
+        optimizer = checkpoint['optimizer']
         model.load_state_dict(checkpoint['model_state_dict'])
-        #optimizer = checkpoint['optimizer']
-        optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch_start = checkpoint['epoch']
     else:
         if args.model == 'unet':
             model = UNet().to(device)
+        elif args.model == 'resnet':
+            model = ResNet().to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-        epoch_start = 0
+        epoch_start = 1
 
     dataloaders = make_dataloaders(args)
     train_loader_transmission = dataloaders['train_loader_transmission']
@@ -98,18 +121,23 @@ def main():
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
         print("Epoch {}".format(epoch))
-        val(args, model, test_loader_transmission, test_loader_reflection, device)
+        val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
-            torch.save({'model': model,
-                        'optimizer': optimizer,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'epoch': epoch
-                       },
-                       "{}/{}_v{}_e{}.hdf5".format(args.weights_path, args.model, args.version, epoch))
+            checkpoint_dict = {
+                'model': model,
+                'optimizer': optimizer,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'epoch': epoch,
+            }
+            checkpoint_path = "{}/{}_v{}_e{}.hdf5".format(
+                args.weights_path,
+                args.model,
+                args.version,
+                epoch)
+            torch.save(checkpoint_dict, checkpoint_path)
 
 
 if __name__ == "__main__":
     main()
-

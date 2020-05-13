@@ -12,10 +12,6 @@ def make_dataloaders(args):
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
     subject_filenames = filter_filenames(paths=subject_filenames, limit=args.subject_limit)
-    astigma_filenames = filter_filenames(paths=astigma_filenames, limit=args.astigma_limit)
-
-    subject_filenames = np.array(args.multi_reflection * subject_filenames)
-    astigma_filenames = np.array(2 * args.multi_reflection * astigma_filenames)
 
     #print("There are {} subject and {} astigma files".format(len(subject_filenames), len(astigma_filenames)))
 
@@ -97,11 +93,12 @@ class DummyDataset:
     def __getitem__(self, item):
         path = self.paths[item]
         img = cv2.imread(path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
         img = random_crop(img).astype(np.float32) / 255.0
 
         resized = cv2.resize(img, (128, 128))
         random_cropped = random_crop(img, 128, 128)
-        alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO more values
+        #alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO more values
 
         kernel = np.zeros((self.reflection_size, self.reflection_size))
         x1, y1, x2, y2 = np.random.randint(0, self.reflection_size, size=4)
@@ -115,11 +112,11 @@ class DummyDataset:
         """
         read about cv2 filter2D and others
         """
-        reflected = cv2.filter2D(random_cropped, -1, kernel)
+        reflected = cv2.filter2D(random_cropped, ddepth=-1, kernel=kernel)
 
         return {'image': np.transpose(resized, (2, 0, 1)),
                 'reflection': np.transpose(reflected, (2, 0, 1)),
-                'alpha': alpha
+                'alpha': alpha,
                }
 
 
@@ -135,6 +132,6 @@ def all_transform(subject, astigma, device):
 
     return {'synthetic': synthetic.to(device),
             'transmission': transmission.to(device),
-            'reflection': reflection.to(device)
+            'reflection': reflection.to(device),
            }
 

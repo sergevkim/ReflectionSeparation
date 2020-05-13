@@ -1,11 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.functional as F
-
-
-class ResBlock():
-    def __init__(self):
-        pass
+import torch.nn.functional as F
 
 
 class ResNet(nn.Module):
@@ -65,7 +60,38 @@ class ResNet(nn.Module):
         return x
 
 
-    def body(self, x):
+    def body(self, x):  #ResNet
+        down_1 = self.conv_down_1(x)
+        down_1 = F.relu(down_1)
+        down_2 = self.conv_down_2(down_1)
+        down_2 = F.relu(down_2)
+
+        down_3 = self.conv_down_2(down_2)
+        down_3 = F.relu(down_3)
+        down_4 = self.conv_down_2(down_3 + down_1)
+        down_4 = F.relu(down_4)
+
+        down_5 = self.conv_down_2(down_4)
+        down_5 = F.relu(down_5)
+        down_6 = self.conv_down_2(down_5 + down_3)
+        down_6 = F.relu(down_6)
+
+        up_1 = self.conv_up_1(down_6)
+        up_1 = F.relu(up_1)
+        up_2 = self.conv_up_2(up_1)
+        up_2 = F.relu(up_2)
+
+        up_3 = self.conv_up_3(up_2 + down_4) #from unet
+        up_3 = F.relu(up_3)
+        up_4 = self.conv_up_4(up_3 + up_1)
+        up_4 = F.relu(up_4)
+
+        up_5 = self.conv_up_5(up_4 + down_2) #from unet
+        up_5 = F.relu(up_5)
+        up_6 = self.conv_up_6(up_5 + up_3)
+        up_6 = F.relu(x - up_6) #from unet
+
+        '''
         legacy1 = self.conv_down_1(x)
         legacy1 = F.relu(legacy1)
         legacy1 = self.conv_down_2(legacy1)
@@ -90,6 +116,7 @@ class ResNet(nn.Module):
         up = F.relu(up)
         up = self.conv_up_6(up)
         up = F.relu(x - up)
+        '''
 
         return up
 
@@ -132,32 +159,28 @@ class ResNet(nn.Module):
         transmission = self.head_1(body_output)
         reflection = self.head_2(body_output)
 
-        return dict(transmission=transmission)
+        return {'transmission': transmission,
+                'reflection': reflection
+               }
 
 
-    def compute_all(self, batch, device=None):
-        synthetic = batch['synthetic'].to(device)
-        alpha_transmitted = batch['alpha_transmitted'].to(device)
-        reflected = batch['reflected'].to(device)
-        output = self.forward(synthetic)
+    def compute_losses(self, batch):
+        output = self.forward(batch['synthetic'])
 
-        loss_trans = F.mse_loss(output['trans'], alpha_transmitted)
-        #TODO loss_refl = F.mse_loss(output['reflect'], reflected)
-
-        #loss = loss_refl + loss_trans
-        loss = loss_trans
+        loss_transmission = F.mse_loss(output['transmission'], batch['transmission'])
+        loss_reflection = F.mse_loss(output['reflection'], batch['reflection'])
+        loss = loss_transmission + loss_reflection
 
         #TODO utils.scripts or other?
+        '''
         scripts.save(output['trans'], 'imgs')
         scripts.save(batch['synthetic'], 'syns')
         scripts.save(batch['alpha_transmitted'], 'alphas')
         scripts.save(batch['reflected'], 'refs')
-        # todo: add VGG L2
-        return dict(
-            loss=loss,
-            metrics=dict(
-                mse_trans=loss_trans.item(),
-                #mse_refl=loss_refl.item(),
-            )
-        )
+        '''
+        #TODO: add VGG L2
+        return {'full': loss,
+                'transmission': loss_transmission,
+                'reflection': loss_reflection
+               }
 

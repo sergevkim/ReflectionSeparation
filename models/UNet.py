@@ -133,27 +133,12 @@ class UNet(nn.Module):
 
 
     def compute_losses(self, batch):
-        #synthetic = batch['synthetic']
-        #alpha_transmitted = batch['alpha_transmitted']
-        #reflected = batch['reflected']
-
         output = self.forward(batch['synthetic'])
-        #output_transmission = output['transmission']#.to(device)
-        #output_reflection = output['reflection']#.to(device)
 
         loss_transmission = F.mse_loss(output['transmission'], batch['transmission'])
         loss_reflection = F.mse_loss(output['reflection'], batch['reflection'])
         loss = loss_transmission + loss_reflection
-
-
-        #TODO utils.scripts or other?
-        '''
-        scripts.save(output['trans'], 'imgs')
-        scripts.save(batch['synthetic'], 'syns')
-        scripts.save(batch['alpha_transmitted'], 'alphas')
-        scripts.save(batch['reflected'], 'refs')
-        '''
-        # todo: add VGG L2
+        # TODO: add VGG L2
         return {'full': loss,
                 'transmission': loss_transmission,
                 'reflection': loss_reflection
