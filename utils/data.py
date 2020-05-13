@@ -7,13 +7,36 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 
+def filter_filenames(paths, limit=None):
+    #removes images from filenames that have incorrect (small) shapes
+
+    good_paths = []
+
+    for path in tqdm(paths):
+        try:
+            img = cv2.imread(path)
+            w, h, c = img.shape
+            assert w > 128 and h > 128 and c == 3, "Small image: {}".format(img.shape)
+            good_paths.append(path)
+        except:
+            pass
+
+    return good_paths
+
+
 def make_dataloaders(args):
     subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
     subject_filenames = filter_filenames(paths=subject_filenames, limit=args.subject_limit)
+    astigma_filenames = filter_filenames(paths=astigma_filenames, limit=args.astigma_limit)
 
-    #print("There are {} subject and {} astigma files".format(len(subject_filenames), len(astigma_filenames)))
+    subject_filenames = np.array(args.multi_reflection * subject_filenames)
+    astigma_filenames = np.array(2 * args.multi_reflection * astigma_filenames)
+
+    print("There are {} subject and {} astigma files".format(
+        len(subject_filenames),
+        len(astigma_filenames)))
 
     subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.1, shuffle=True)
     astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.1, shuffle=True)
@@ -47,23 +70,6 @@ def make_dataloaders(args):
     }
 
     return dataloaders
-
-
-def filter_filenames(paths, limit=None):
-    #removes images from filenames that have incorrect (small) shapes
-
-    good_paths = []
-
-    for path in tqdm(paths):
-        try:
-            img = cv2.imread(path)
-            w, h, c = img.shape
-            assert w > 128 and h > 128 and c == 3, "Small image: {}".format(img.shape)
-            good_paths.append(path)
-        except:
-            pass
-
-    return good_paths
 
 
 def random_crop(img, w=None, h=None): #TODO central crop!

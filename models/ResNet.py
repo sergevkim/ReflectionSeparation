@@ -159,9 +159,12 @@ class ResNet(nn.Module):
         transmission = self.head_1(body_output)
         reflection = self.head_2(body_output)
 
-        return {'transmission': transmission,
-                'reflection': reflection
-               }
+        output = {
+            'transmission': transmission,
+            'reflection': reflection
+        }
+
+        return output
 
 
     def compute_losses(self, batch):
@@ -179,8 +182,11 @@ class ResNet(nn.Module):
         scripts.save(batch['reflected'], 'refs')
         '''
         #TODO: add VGG L2
-        return {'full': loss,
-                'transmission': loss_transmission,
-                'reflection': loss_reflection
-               }
+        losses = {
+            'full': loss,
+            'transmission': loss_transmission,
+            'reflection': loss_reflection
+        }
+
+        return losses
 

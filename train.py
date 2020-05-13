@@ -49,7 +49,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
         if batch_index % 100 == 0:
             if args.verbose:
-                print("EPOCH {}, BATCH {}".format(epoch, batch_index))
+                print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
                 print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
             if args.save_model:
@@ -67,7 +67,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
                     epoch)
                 torch.save(checkpoint_dict, checkpoint_path)
 
-    print("The training epoch ended in {} seconds".format(time.time() - time_start))
+    print("The training epoch ended in {} seconds, mean mse_t: {}, mean psnr_t: {}".format(
+        time.time() - time_start,
+        sum(history['mse_t']) / len(history['mse_t']),
+        sum(history['psnr_t']) / len(history['psnr_t'])))
 
 
 def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):
@@ -99,7 +102,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
 
         if batch_index % 100 == 0:
             if args.verbose:
-                print("EPOCH {}, BATCH {}".format(epoch, batch_index))
+                print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
                 print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
 
@@ -140,7 +143,7 @@ def main():
     test_loader_reflection = dataloaders['test_loader_reflection']
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
-        print("Epoch {}".format(epoch))
+        print("======== EPOCH {} ========".format(epoch))
         val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
