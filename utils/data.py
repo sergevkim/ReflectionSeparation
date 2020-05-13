@@ -39,20 +39,19 @@ def make_dataloaders(args):
         shuffle=True,
         drop_last=True)
 
-    loaders = {
+    dataloaders = {
         'train_loader_transmission': train_loader_transmission,
         'train_loader_reflection': train_loader_reflection,
         'test_loader_transmission': test_loader_transmission,
         'test_loader_reflection': test_loader_reflection
     }
 
-    return loaders
+    return dataloaders
 
 
 def filter_filenames(paths, limit=None):
-    '''
-    removes images from filenames that have incorrect (small) shapes
-    '''
+    #removes images from filenames that have incorrect (small) shapes
+
     good_paths = []
 
     for path in tqdm(paths):

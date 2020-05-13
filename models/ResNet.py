@@ -118,7 +118,7 @@ class ResNet(nn.Module):
         up = F.relu(x - up)
         '''
 
-        return up
+        return up_6
 
 
     def head_1(self, x):

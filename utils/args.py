@@ -7,9 +7,9 @@ import torch
 def train_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="unet", type=str, help="model type, default: unet")
-    parser.add_argument("--batch-size", default=8, type=int, help="batch_size, default: 8")
+    parser.add_argument("--batch-size", default=16, type=int, help="batch_size, default: 16")
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
-    parser.add_argument("--version", default=7, type=int, help="version of the model, default: 6")
+    parser.add_argument("--version", default=8, type=int, help="version of the model, default: 8")
 
     parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
     parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")
@@ -40,13 +40,6 @@ def train_parse_args():
         default="{}/weights/last.hdf5".format(Path.cwd()),
         type=str,
         help="last checkpoint, default: ./weights/last.hdf5")
-
-    return parser.parse_args()
-
-
-def eval_parse_args():
-    parser = argparse.ArgumentParser()
-    #TODO
 
     return parser.parse_args()
 
