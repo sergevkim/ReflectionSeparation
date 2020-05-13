@@ -12,7 +12,6 @@ import cv2
 from models.UNet import UNet
 from models.ResNet import ResNet
 
-import utils
 from utils.args import test_parse_args
 
 
@@ -51,7 +50,7 @@ def main():
         print(i, filename)
         img = cv2.imread(filename)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-        out = process(model, image)
+        out = process(model, img)
         out = cv2.cvtColor(out, cv2.COLOR_LAB2RGB)
         cv2.imwrite(basket_out_filenames[i], out)
 

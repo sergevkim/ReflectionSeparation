@@ -17,6 +17,13 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     dataloader_full = zip(train_loader_transmission, train_loader_reflection)
 
+    history = {
+        'mse_t': [],
+        'mse_r': [],
+        'psnr_t': [],
+        'psnr_r': [],
+    }
+
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
         batch = all_transform(transmission, reflection, device) #TODO remove all_transform: add it to train_loader
 
@@ -24,7 +31,17 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         #synthetic = alpha * transmission + (1 - alpha) * reflection
 
         losses = model.compute_losses(batch)
+
         loss = losses['full']
+        mse_t = losses['tranmission'].item()
+        mse_r = losses['reflection'].item()
+        psnr_t = 10 * np.log10(1 / mse_t)
+        psnr_r = 10 * np.log10(1 / mse_r)
+
+        history['mse_t'].append(mse_t)
+        history['mse_r'].append(mse_r)
+        history['psnr_t'].append(psnr_t)
+        history['psnr_r'].append(psnr_r)
 
         optimizer.zero_grad()
         loss.backward()
@@ -33,19 +50,22 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         if batch_index % 100 == 0:
             if args.verbose:
                 print("EPOCH {}, BATCH {}".format(epoch, batch_index))
-                print("mse_t: {}, mse_r: {}".format(losses['transmission'].item(),
-                                                    losses['reflection'].item()))
-                print("psnr_t: {}, psnr_r: {}".format(10 * np.log10(1 / losses['transmission'].item()),
-                                                      10 * np.log10(1 / losses['reflection'].item())))
+                print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
+                print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
             if args.save_model:
-                torch.save({
+                checkpoint_dict = {
                     'model': model,
                     'optimizer': optimizer,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'epoch': epoch,
-                    },
-                    "{}/last_checkpoint.hdf5".format(args.weights_path))
+                }
+                checkpoint_path = "{}/{}_v{}_e{}.hdf5".format(
+                    args.weights_path,
+                    args.model,
+                    args.version,
+                    epoch)
+                torch.save(checkpoint_dict, checkpoint_path)
 
     print("The training epoch ended in {} seconds".format(time.time() - time_start))
 
@@ -56,11 +76,11 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
 
     dataloader_full = zip(test_loader_transmission, test_loader_reflection)
 
-    metrics = {
-        'mean_mse_t': [],
-        'mean_mse_r': [],
-        'mean_psnr_t': [],
-        'mean_psnr_r': [],
+    history = {
+        'mse_t': [],
+        'mse_r': [],
+        'psnr_t': [],
+        'psnr_r': [],
     }
 
     for batch_index, (transmission, reflection) in enumerate(dataloader_full):
@@ -72,10 +92,10 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
         psnr_t = 10 * np.log10(1 / mse_t)
         psnr_r = 10 * np.log10(1 / mse_r)
 
-        metrics['mean_mse_t'].append(mse_t)
-        metrics['mean_mse_r'].append(mse_r)
-        metrics['mean_psnr_t'].append(psnr_t)
-        metrics['mean_psnr_r'].append(psnr_r)
+        history['mse_t'].append(mse_t)
+        history['mse_r'].append(mse_r)
+        history['psnr_t'].append(psnr_t)
+        history['psnr_r'].append(psnr_r)
 
         if batch_index % 100 == 0:
             if args.verbose:
@@ -85,8 +105,8 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
 
     print("Validation ended in {} seconds, mean mse_t: {}, mean psnr_t: {}".format(
         time.time() - time_start,
-        sum(metrics['mean_mse_t']) / len(metrics['mean_mse_t']),
-        sum(metrics['mean_psnr_t']) / len(metrics['mean_psnr_r'])))
+        sum(history['mse_t']) / len(history['mse_t']),
+        sum(history['psnr_t']) / len(history['psnr_r'])))
 
 
 def main():

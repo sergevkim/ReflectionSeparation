@@ -18,28 +18,35 @@ def make_dataloaders(args):
     subject_filenames_train, subject_filenames_test = train_test_split(subject_filenames, test_size=0.1, shuffle=True)
     astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.1, shuffle=True)
 
-    train_loader_transmission = DataLoader(DummyDataset(subject_filenames_train),
-                                           batch_size=args.batch_size,
-                                           shuffle=True,
-                                           drop_last=True)
-    train_loader_reflection = DataLoader(DummyDataset(astigma_filenames_train),
-                                         batch_size=args.batch_size,
-                                         shuffle=True,
-                                         drop_last=True)
-    test_loader_transmission = DataLoader(DummyDataset(subject_filenames_test),
-                                          batch_size=args.batch_size,
-                                          shuffle=True,
-                                          drop_last=True)
-    test_loader_reflection = DataLoader(DummyDataset(astigma_filenames_test),
-                                        batch_size=args.batch_size,
-                                        shuffle=True,
-                                        drop_last=True)
+    train_loader_transmission = DataLoader(
+        DummyDataset(subject_filenames_train),
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True)
+    train_loader_reflection = DataLoader(
+        DummyDataset(astigma_filenames_train),
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True)
+    test_loader_transmission = DataLoader(
+        DummyDataset(subject_filenames_test),
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True)
+    test_loader_reflection = DataLoader(
+        DummyDataset(astigma_filenames_test),
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True)
 
-    return {'train_loader_transmission': train_loader_transmission,
-            'train_loader_reflection': train_loader_reflection,
-            'test_loader_transmission': test_loader_transmission,
-            'test_loader_reflection': test_loader_reflection
-           }
+    loaders = {
+        'train_loader_transmission': train_loader_transmission,
+        'train_loader_reflection': train_loader_reflection,
+        'test_loader_transmission': test_loader_transmission,
+        'test_loader_reflection': test_loader_reflection
+    }
+
+    return loaders
 
 
 def filter_filenames(paths, limit=None):
@@ -98,7 +105,7 @@ class DummyDataset:
 
         resized = cv2.resize(img, (128, 128))
         random_cropped = random_crop(img, 128, 128)
-        #alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO more values
+        alpha = np.float32(np.random.uniform(0.4, 0.8)) #TODO more values
 
         kernel = np.zeros((self.reflection_size, self.reflection_size))
         x1, y1, x2, y2 = np.random.randint(0, self.reflection_size, size=4)
@@ -116,8 +123,7 @@ class DummyDataset:
 
         return {'image': np.transpose(resized, (2, 0, 1)),
                 'reflection': np.transpose(reflected, (2, 0, 1)),
-                'alpha': alpha,
-               }
+                'alpha': alpha}
 
 
 def all_transform(subject, astigma, device):
@@ -132,6 +138,5 @@ def all_transform(subject, astigma, device):
 
     return {'synthetic': synthetic.to(device),
             'transmission': transmission.to(device),
-            'reflection': reflection.to(device),
-           }
+            'reflection': reflection.to(device)}
 
