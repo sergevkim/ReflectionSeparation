@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import torch
+#from torch.utils.tensorboard import SummaryWriter
 
 from models.UNet import UNet
 from models.ResNet import ResNet
@@ -29,12 +30,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         #synthetic = alpha * transmission + (1 - alpha) * reflection
         #alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO temperature function
 
-        batch = all_transform(
-            subject, astigma,
-            device=device,
-            epoch=epoch,
-            reflection_kernel_size=(8, 8),
-            blur_kernel_size=(5, 5))
+        batch = model.prepare_batch(subject, astigma, device, epoch)
         losses = model.compute_losses(batch)
 
         loss = losses['full']
@@ -92,12 +88,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
     }
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
-        batch = all_transform(
-            subject, astigma,
-            device=device,
-            epoch=epoch,
-            reflection_kernel_size=(8, 8),
-            blur_kernel_size=(5, 5))
+        batch = model.prepare_batch(subject, astigma, device, epoch)
         losses = model.compute_losses(batch)
 
         mse_t = losses['transmission'].item()
@@ -112,7 +103,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
 
         if batch_index % 100 == 0:
             if args.verbose:
-                print("BATCH {}".format(batch_index))
+                print("VALIDATION BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
                 print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
 
@@ -120,7 +111,6 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
         time.time() - time_start,
         sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_r'])))
-    print("--------------------------")
 
 
 def main():
@@ -147,15 +137,16 @@ def main():
         optimizer = torch.optim.Adam(model.parameters(), lr=3e-4) #TODO lr schedule
         epoch_start = 1
 
-    dataloaders = make_dataloaders(args)
-    train_loader_transmission = dataloaders['train_loader_transmission']
-    train_loader_reflection = dataloaders['train_loader_reflection']
-    test_loader_transmission = dataloaders['test_loader_transmission']
-    test_loader_reflection = dataloaders['test_loader_reflection']
-
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
         print("======== EPOCH {} ========".format(epoch))
-        val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
+        dataloaders = make_dataloaders(args, epoch)
+        train_loader_transmission = dataloaders['train_loader_transmission']
+        train_loader_reflection = dataloaders['train_loader_reflection']
+        test_loader_transmission = dataloaders['test_loader_transmission']
+        test_loader_reflection = dataloaders['test_loader_reflection']
+
+        #val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
+        print("--------------------------")
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
             checkpoint_dict = {

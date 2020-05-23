@@ -31,15 +31,16 @@ def train_parse_args():
         type=str,
         help="astigma images path, default: ./data/astigma_images")
     parser.add_argument(
-        "--weights-path",
-        default="{}/weights".format(Path.cwd()),
+        "--checkpoints-path",
+        default="{}/checkpoints".format(Path.cwd()),
         type=str,
-        help="weigths path, default: ./weights")
-    parser.add_argument(
-        "--checkpoint-path",
-        default="{}/weights/last.hdf5".format(Path.cwd()),
+        help="weigths path, default: ./checkpoints")
+    psrser.add_argument(
+        "--logs-path",
+        default="{}/logs",
         type=str,
-        help="last checkpoint, default: ./weights/last.hdf5")
+        help="logs path, default: ./logs"
+    )
 
     return parser.parse_args()
 

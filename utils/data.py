@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
+from torchvision.transforms import ToTensor
 
 
 def filter_filenames(paths, limit=None):
@@ -24,7 +25,7 @@ def filter_filenames(paths, limit=None):
     return good_paths
 
 
-def make_dataloaders(args):
+def make_dataloaders(args, epoch):
     subject_filenames = [str(p) for p in Path(args.subject_images_path).glob("*.jpg")]
     astigma_filenames = [str(p) for p in Path(args.astigma_images_path).glob("*.jpg")]
 
@@ -42,22 +43,34 @@ def make_dataloaders(args):
     astigma_filenames_train, astigma_filenames_test = train_test_split(astigma_filenames, test_size=0.1, shuffle=True)
 
     train_loader_transmission = DataLoader(
-        DummyDataset(subject_filenames_train),
+        DummyDataset(
+            mode='transmission',
+            paths=subject_filenames_train,
+            epoch=epoch),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
     train_loader_reflection = DataLoader(
-        DummyDataset(astigma_filenames_train),
+        DummyDataset(
+            mode='reflection',
+            paths=astigma_filenames_train,
+            epoch=epoch),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
     test_loader_transmission = DataLoader(
-        DummyDataset(subject_filenames_test),
+        DummyDataset(
+            mode='transmission',
+            paths=subject_filenames_test,
+            epoch=epoch),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
     test_loader_reflection = DataLoader(
-        DummyDataset(astigma_filenames_test),
+        DummyDataset(
+            mode='reflection',
+            paths=astigma_filenames_test,
+            epoch=epoch),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -72,7 +85,7 @@ def make_dataloaders(args):
     return dataloaders
 
 
-def random_cropped(img, window=(None, None)): #TODO central crop!
+def random_crop(img, window=(None, None)): #TODO central crop!
     w, h = window
     img_w, img_h, img_c = img.shape
     if w is None and h is None:
@@ -97,9 +110,13 @@ def random_cropped(img, window=(None, None)): #TODO central crop!
 class DummyDataset:
     def __init__(
             self,
+            mode,
             paths,
+            epoch,
             new_size=(128, 128)):
+        self.mode = mode
         self.paths = paths
+        self.epoch = epoch
         self.new_size = new_size
 
     def __len__(self):
@@ -109,16 +126,14 @@ class DummyDataset:
         path = self.paths[item]
         img = cv2.imread(path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = img.astype(np.float32) / 255.0
-        img_resized = cv2.resize(img, self.new_size)
-        img_cropped = random_cropped(img, self.new_size)
+        #img = img.astype(np.float32) / 255.0
 
-        out = {
-            'resized': img_resized,
-            'cropped': img_cropped,
-        }
-
-        return out
+        if self.mode == 'transmission':
+            img_resized = cv2.resize(img, self.new_size)
+            return ToTensor()(img_resized)
+        elif self.mode == 'reflection':
+            img_cropped = random_crop(img, self.new_size)
+            return ToTensor()(img_cropped)
 
 
 def all_transform(

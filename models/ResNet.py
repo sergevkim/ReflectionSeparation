@@ -1,3 +1,6 @@
+import numpy as np
+import cv2
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -162,6 +165,54 @@ class ResNet(nn.Module):
         output = {
             'transmission': transmission,
             'reflection': reflection
+        }
+
+        return output
+
+
+    def prepare_batch(
+            self,
+            subject,
+            astigma,
+            device,
+            epoch,
+            reflection_kernel_size=(9, 9),
+            blur_kernel_size=(5, 5),
+            train=True):
+
+        if train:
+            if epoch < 2:
+                alpha = np.random.uniform(0.75, 0.8)
+            else:
+                alpha = np.random.uniform(0.4, 0.8)
+        else:
+            alpha = np.random.uniform(0.6, 0.8)
+
+        reflection_kernel = np.zeros(reflection_kernel_size)
+        x1, y1, x2, y2 = np.random.randint(0, reflection_kernel_size[0], size=4)
+        reflection_kernel[x1, y1] = 1.0 - np.sqrt(alpha)
+        reflection_kernel[x2, y2] = np.sqrt(alpha) - alpha
+        reflection_kernel = cv2.GaussianBlur(reflection_kernel, blur_kernel_size, 0)
+
+        reflection_kernel_2 = np.array([
+            np.array([reflection_kernel, np.zeros_like(reflection_kernel), np.zeros_like(reflection_kernel)]),
+            np.array([np.zeros_like(reflection_kernel), reflection_kernel, np.zeros_like(reflection_kernel)]),
+            np.array([np.zeros_like(reflection_kernel), np.zeros_like(reflection_kernel), reflection_kernel]),
+        ])
+        reflection_kernel_2 = torch.Tensor(reflection_kernel_2)
+
+        transmission = subject * alpha
+        print('!', astigma.shape, reflection_kernel_2.shape)
+        reflection = F.conv2d(
+            astigma,
+            reflection_kernel_2,
+            padding=reflection_kernel_size[0] // 2)
+        synthetic = transmission + reflection
+
+        output = {
+            'synthetic': synthetic.to(device),
+            'transmission': transmission.to(device),
+            'reflection': reflection.to(device),
         }
 
         return output
