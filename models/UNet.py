@@ -170,7 +170,6 @@ class UNet(nn.Module):
         reflection_kernel_2 = torch.Tensor(reflection_kernel_2)
 
         transmission = subject * alpha
-        print('!', astigma.shape, reflection_kernel_2.shape)
         reflection = F.conv2d(
             astigma,
             reflection_kernel_2,

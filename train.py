@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 import torch
-#from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 from models.UNet import UNet
 from models.ResNet import ResNet
@@ -62,7 +62,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
                     'epoch': epoch,
                 }
                 checkpoint_path = "{}/{}_v{}_e{}.hdf5".format(
-                    args.weights_path,
+                    args.checkpoints_path,
                     args.model,
                     args.version,
                     epoch)
@@ -72,6 +72,16 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         time.time() - time_start,
         sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_t'])))
+
+    logs_filename = "{}/{}_v{}_e{}.hdf5".format(
+        args.logs_path,
+        args.model,
+        args.version,
+        epoch)
+    print(
+        sum(history['mse_t']) / len(history['mse_t']),
+        sum(history['psnr_t']) / len(history['psnr_t']),
+        file=open(logs_filename, 'w'))
 
 
 def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):
@@ -111,6 +121,10 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
         time.time() - time_start,
         sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_r'])))
+    print(
+        sum(history['mse_t']) / len(history['mse_t']),
+        sum(history['psnr_t']) / len(history['psnr_r']),
+        file=open(args.logs, 'w'))
 
 
 def main():
@@ -157,7 +171,7 @@ def main():
                 'epoch': epoch,
             }
             checkpoint_path = "{}/{}_v{}_e{}.hdf5".format(
-                args.weights_path,
+                args.checkpoints_path,
                 args.model,
                 args.version,
                 epoch)

@@ -35,7 +35,7 @@ def train_parse_args():
         default="{}/checkpoints".format(Path.cwd()),
         type=str,
         help="weigths path, default: ./checkpoints")
-    psrser.add_argument(
+    parser.add_argument(
         "--logs-path",
         default="{}/logs",
         type=str,
