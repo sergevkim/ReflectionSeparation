@@ -7,9 +7,9 @@ import torch
 def train_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="unet", type=str, help="model type, default: unet")
-    parser.add_argument("--batch-size", default=8, type=int, help="batch_size, default: 8")
+    parser.add_argument("--batch-size", default=16, type=int, help="batch_size, default: 16")
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
-    parser.add_argument("--version", default=7, type=int, help="version of the model, default: 6")
+    parser.add_argument("--version", default=8, type=int, help="version of the model, default: 8")
 
     parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
     parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")
@@ -20,29 +20,27 @@ def train_parse_args():
     parser.add_argument("--verbose", action='store_true', help="verbose")
     parser.add_argument("--from-checkpoint", action='store_true', help="from checkpoint")
 
-    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()), type=str,
-                        help="subject images path, default: ./data/subject_images")
-    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str,
-                        help="astigma images path, default: ./data/astigma_images")
-    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str,
-                        help="weigths path, default: ./weights")
-    parser.add_argument("--logs-path", default="./logs".format(Path.cwd()), type=str,
-                        help="logs path, default: ./logs")
-    parser.add_argument("--checkpoint-path", default="{}/weights/last.hdf5".format(Path.cwd()), type=str,
-                        help="last checkpoint, default: ./weights/last.hdf5")
-
-    parser.add_argument("--subject-images-path", default="{}/data/subject_images".format(Path.cwd()), type=str, help="subject images path")
-    parser.add_argument("--astigma-images-path", default="{}/data/astigma_images".format(Path.cwd()), type=str, help="astigma images path")
-    parser.add_argument("--weights-path", default="{}/weights".format(Path.cwd()), type=str, help="weigths path")
-    parser.add_argument("--logs-path", default="{}/logs".format(Path.cwd()), type=str, help="logs path")
-    parser.add_argument("--from-checkpoint", default="{}/weights/last.hdf5".format(Path.cwd()), type=str, help="last checkpoint")
-
-    return parser.parse_args()
-
-
-def eval_parse_args():
-    parser = argparse.ArgumentParser()
-    #TODO
+    parser.add_argument(
+        "--subject-images-path",
+        default="{}/data/subject_images".format(Path.cwd()),
+        type=str,
+        help="subject images path, default: ./data/subject_images")
+    parser.add_argument(
+        "--astigma-images-path",
+        default="{}/data/astigma_images".format(Path.cwd()),
+        type=str,
+        help="astigma images path, default: ./data/astigma_images")
+    parser.add_argument(
+        "--checkpoints-path",
+        default="{}/checkpoints".format(Path.cwd()),
+        type=str,
+        help="weigths path, default: ./checkpoints")
+    parser.add_argument(
+        "--logs-path",
+        default="{}/runs".format(Path.cwd()),
+        type=str,
+        help="logs path, default: ./runs"
+    )
 
     return parser.parse_args()
 
@@ -70,39 +68,3 @@ def prepare_data_parse_args():
     parser.add_argument("--url", default="https://www.hel-looks.com/archive/#20190810_13", type=str, help="url with astigma data")
 
     return parser.parse_args()
-
-
-def handle_args(args):
-    for arg in vars(args):
-        print("{}: {}".format(arg, vars(args)[arg]))
-
-    if not args.disable_cuda and torch.cuda.is_available():
-        device = torch.device('cuda')
-        print("CUDA is on")
-    else:
-        device = torch.device('cpu')
-        print("CUDA is off")
-
-    if not args.from_checkpoint:
-        if args.model == 'unet':
-            model = UNet()
-        elif args.model == 'resnet':
-            model = ResNet()
-        else:
-            print("args.model must be unet or resnet")
-            return 0
-        model.to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-        epoch_start = 0
-    else:
-        checkpoint = torch.load(args.checkpoint_path)
-        model = checkpoint['model']
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        epoch_start = checkpoint['epoch']
-
-    return {'device': device,
-            'model': model,
-            'optimizer': optimizer,
-            'epoch_start': epoch_start}
-
