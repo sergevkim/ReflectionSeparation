@@ -98,7 +98,6 @@ def random_crop(img, window=(None, None)):
     border_w = img_w - w - 100
     border_h = img_h - h - 100
 
-
     if img_w > w:
         x = np.random.randint(
             min(100, border_w) - 1,

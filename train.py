@@ -69,7 +69,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     print("The training epoch ended in {} seconds,\nmean mse_t: {},\nmean psnr_t: {}".format(
         time.time() - time_start,
-        sum(history['mse_t']) / len(history['mse_tz']),
+        sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_t'])))
     writer.close()
 
@@ -127,7 +127,7 @@ def main():
         device = torch.device('cpu')
 
     if args.from_checkpoint:
-        checkpoint = torch.load(args.checkpoint_path)
+        checkpoint = torch.load(args.cur_checkpoint_path)
         model = checkpoint['model'].to(device)
         optimizer = checkpoint['optimizer']
         model.load_state_dict(checkpoint['model_state_dict'])

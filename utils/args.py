@@ -53,6 +53,10 @@ def train_parse_args():
         type=str,
         help="logs path, default: ./runs"
     )
+    parser.add_argument(
+        "--cur-checkpoint-path",
+        type=str,
+        help="checkpoint path to start from this state")
 
     return parser.parse_args()
 
