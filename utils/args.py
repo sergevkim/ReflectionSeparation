@@ -11,9 +11,21 @@ def train_parse_args():
     parser.add_argument("--n-epochs", default=10, type=int, help="number of epochs, default: 10")
     parser.add_argument("--version", default=8, type=int, help="version of the model, default: 8")
 
-    parser.add_argument("--subject-limit", default=5400, type=int, help="max number of subject images, default: 5400")
-    parser.add_argument("--astigma-limit", default=2700, type=int, help="number of epochs, default: 2700")
-    parser.add_argument("--multi_reflection", default=8, type=int, help="multi reflection, default: 8")
+    parser.add_argument(
+        "--subject-limit",
+        default=5400,
+        type=int,
+        help="max number of subject images, default: 5400")
+    parser.add_argument(
+        "--astigma-limit",
+        default=2700,
+        type=int,
+        help="number of epochs, default: 2700")
+    parser.add_argument(
+        "--multi_reflection",
+        default=8,
+        type=int,
+        help="multi reflection, default: 8")
 
     parser.add_argument("--disable-cuda", action='store_true', help="disable CUDA")
     parser.add_argument("--save-model", action='store_true', help="save model")
