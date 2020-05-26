@@ -14,10 +14,10 @@ from utils.data import DummyDataset, make_dataloaders, filter_filenames, all_tra
 
 def train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch):
     time_start = time.time()
+    writer = SummaryWriter("{}/tensorboard".format(args.logs_path))
     model.train()
 
     dataloader_full = zip(train_loader_transmission, train_loader_reflection)
-
     history = {
         'mse_t': [],
         'mse_r': [],
@@ -46,9 +46,8 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
         if batch_index % 100 == 0:
             if True: #TODO args.logs or always?
-                writer = SummaryWriter("{}/tensorboard".format(args.logs_path))
                 writer.add_scalar('gradnorm/train', float(torch.norm(model.conv_head_1_6.weight.grad)), batch_index)
-                writer.add_scalar('psnr/train', psnr_t, batch_index)
+                writer.add_scalar('Loss/train', psnr_t, batch_index)
             if args.verbose:
                 print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
