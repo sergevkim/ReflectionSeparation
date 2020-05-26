@@ -48,7 +48,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
         if batch_index % 100 == 0:
             if True: #TODO args.logs or always?
-                writer = SummaryWriter("{}/tensorboard".format(args.log_path))
+                writer = SummaryWriter("{}/tensorboard".format(args.logs_path))
                 writer.add_scalar('gradnorm/train', np.random.randint(1, 10), n_iter)
                 writer.add_scalar('psnr/train', np.random.randint(1, 10), n_iter)
             if args.verbose:

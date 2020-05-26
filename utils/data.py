@@ -94,7 +94,6 @@ def random_crop(img, window=(None, None)): #TODO central crop!
     assert (img_w - w - 128 >= 0) and (img_h - h - 128 >= 0) and (img_c == 3), "Bad image shape: {}".format(img.shape)
 
     if img_w > w:
-        print(img_w - w - 128)
         x = np.random.randint(min(128, img_w - w - 128) - 1, img_w - w - 128)
     else:
         x = 0
