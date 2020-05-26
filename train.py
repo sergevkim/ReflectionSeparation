@@ -71,6 +71,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         time.time() - time_start,
         sum(history['mse_t']) / len(history['mse_tz']),
         sum(history['psnr_t']) / len(history['psnr_t'])))
+    writer.close()
 
 
 def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):
@@ -113,7 +114,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
     print(
         sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_r']),
-        file=open(args.logs_path, 'w'))
+        file=open("smth.txt", 'w'))
 
 
 def main():
@@ -148,7 +149,7 @@ def main():
         test_loader_transmission = dataloaders['test_loader_transmission']
         test_loader_reflection = dataloaders['test_loader_reflection']
 
-        #val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
+        val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
         print("--------------------------")
         train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
         if args.save_model:
