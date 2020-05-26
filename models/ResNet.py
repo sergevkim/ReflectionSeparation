@@ -224,13 +224,6 @@ class ResNet(nn.Module):
         loss_reflection = F.mse_loss(output['reflection'], batch['reflection'])
         loss = loss_transmission + loss_reflection
 
-        #TODO utils.scripts or other?
-        '''
-        scripts.save(output['trans'], 'imgs')
-        scripts.save(batch['synthetic'], 'syns')
-        scripts.save(batch['alpha_transmitted'], 'alphas')
-        scripts.save(batch['reflected'], 'refs')
-        '''
         #TODO: add VGG L2
         losses = {
             'full': loss,

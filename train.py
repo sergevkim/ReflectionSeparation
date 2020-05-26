@@ -26,12 +26,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     }
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
-        #batch = all_transform(transmission, reflection, alpha, device) #TODO remove all_transform: add it to train_loader
-        #synthetic = alpha * transmission + (1 - alpha) * reflection
-        #alpha = np.float32(np.random.uniform(0.75, 0.8)) #TODO temperature function
-
         batch = model.prepare_batch(subject, astigma, device, epoch)
+        print(batch)
         losses = model.compute_losses(batch)
+        print(losses)
 
         loss = losses['full']
         mse_t = losses['transmission'].item()
@@ -47,8 +45,14 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        print('!', loss.grad())
+        print('!!!', optimizer.grad())
 
         if batch_index % 100 == 0:
+            if True: #TODO args.logs or always?
+                writer = SummaryWriter("{}/tensorboard".format(args.log_path))
+                writer.add_scalar('gradnorm/train', np.random.randint(1, 10), n_iter)
+                writer.add_scalar('psnr/train', np.random.randint(1, 10), n_iter)
             if args.verbose:
                 print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
@@ -70,18 +74,8 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     print("The training epoch ended in {} seconds,\nmean mse_t: {},\nmean psnr_t: {}".format(
         time.time() - time_start,
-        sum(history['mse_t']) / len(history['mse_t']),
+        sum(history['mse_t']) / len(history['mse_tz']),
         sum(history['psnr_t']) / len(history['psnr_t'])))
-
-    logs_filename = "{}/{}_v{}_e{}.hdf5".format(
-        args.logs_path,
-        args.model,
-        args.version,
-        epoch)
-    print(
-        sum(history['mse_t']) / len(history['mse_t']),
-        sum(history['psnr_t']) / len(history['psnr_t']),
-        file=open(logs_filename, 'w'))
 
 
 def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):

@@ -206,3 +206,5 @@ class UNet(nn.Module):
             'reflection': loss_reflection
         }
 
+        return losses
+
