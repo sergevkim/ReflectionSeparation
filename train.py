@@ -27,9 +27,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
         batch = model.prepare_batch(subject, astigma, device, epoch)
-        print(batch)
         losses = model.compute_losses(batch)
-        print(losses)
 
         loss = losses['full']
         mse_t = losses['transmission'].item()
