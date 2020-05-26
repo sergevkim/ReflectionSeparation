@@ -39,7 +39,7 @@ def train_parse_args():
         "--logs-path",
         default="{}/runs",
         type=str,
-        help="logs path, default: ./logs"
+        help="logs path, default: ./runs"
     )
 
     return parser.parse_args()

@@ -43,8 +43,9 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        print('!', loss.grad())
-        print('!!!', optimizer.grad())
+
+        print('!\n', model.conv_head_2_6.grad)
+        print('!!\n', model.grad)
 
         if batch_index % 100 == 0:
             if True: #TODO args.logs or always?
@@ -116,7 +117,7 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
     print(
         sum(history['mse_t']) / len(history['mse_t']),
         sum(history['psnr_t']) / len(history['psnr_r']),
-        file=open(args.logs, 'w'))
+        file=open(args.logs_path, 'w'))
 
 
 def main():
