@@ -44,14 +44,11 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         loss.backward()
         optimizer.step()
 
-        print('!\n', model.conv_head_2_6.grad)
-        print('!!\n', model.grad)
-
         if batch_index % 100 == 0:
             if True: #TODO args.logs or always?
                 writer = SummaryWriter("{}/tensorboard".format(args.logs_path))
-                writer.add_scalar('gradnorm/train', np.random.randint(1, 10), n_iter)
-                writer.add_scalar('psnr/train', np.random.randint(1, 10), n_iter)
+                writer.add_scalar('gradnorm/train', float(torch.norm(model.conv_head_1_6.weight.grad)), batch_index)
+                writer.add_scalar('psnr/train', psnr_t, batch_index)
             if args.verbose:
                 print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
