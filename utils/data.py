@@ -17,7 +17,7 @@ def filter_filenames(paths, limit=None):
         try:
             img = cv2.imread(path)
             w, h, c = img.shape
-            assert w > 256 and h > 256 and c == 3, "Small image: {}".format(img.shape)
+            assert w > 400 and h > 400 and c == 3, "Small image: {}".format(img.shape)
             good_paths.append(path)
         except:
             pass
@@ -85,25 +85,35 @@ def make_dataloaders(args, epoch):
     return dataloaders
 
 
-def random_crop(img, window=(None, None)): #TODO central crop!
+def random_crop(img, window=(None, None)):
     w, h = window
     img_w, img_h, img_c = img.shape
     if w is None and h is None:
-        w = h = min(img_w, img_h)
+        #w = h = min(img_w, img_h)
+        w = 200
+        h = 200
 
-    assert (img_w - w - 128 >= 0) and (img_h - h - 128 >= 0) and (img_c == 3), "Bad image shape: {}".format(img.shape)
+    assert (w + 200 <= img_w) and (h + 200 <= img_h) and (img_c == 3), "Bad image shape: {}".format(img.shape)
+
+    border_w = img_w - w - 100
+    border_h = img_h - h - 100
+
 
     if img_w > w:
-        x = np.random.randint(min(128, img_w - w - 128) - 1, img_w - w - 128)
+        x = np.random.randint(
+            min(100, border_w) - 1,
+            border_w)
     else:
         x = 0
 
     if img_h > h:
-        y = np.random.randint(min(128, img_w - w - 128) - 1, img_h - h - 128)
+        y = np.random.randint(
+            min(100, border_h) - 1,
+            border_h)
     else:
         y = 0
 
-    return img[x:x + w, y:y + h, :]
+    return img[x:x+w, y:y+h, :]
 
 
 class DummyDataset:
@@ -125,14 +135,14 @@ class DummyDataset:
         path = self.paths[item]
         img = cv2.imread(path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        #img = img.astype(np.float32) / 255.0
 
         if self.mode == 'transmission':
             img_resized = cv2.resize(img, self.new_size)
             return ToTensor()(img_resized)
         elif self.mode == 'reflection':
-            img_cropped = random_crop(img, self.new_size)
-            return ToTensor()(img_cropped)
+            img_cropped = random_crop(img, (200, 200))
+            img_resized = cv2.resize(img_cropped, self.new_size)
+            return ToTensor()(img_resized)
 
 
 def all_transform(
