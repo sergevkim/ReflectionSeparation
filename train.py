@@ -14,7 +14,7 @@ from utils.data import DummyDataset, make_dataloaders, filter_filenames, all_tra
 
 def train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch):
     time_start = time.time()
-    writer = SummaryWriter("{}/tensorboard".format(args.logs_path))
+    writer = SummaryWriter("{}/tensorboard/epoch_{}".format(args.logs_path, epoch))
     model.train()
 
     dataloader_full = zip(train_loader_transmission, train_loader_reflection)
