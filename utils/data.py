@@ -133,7 +133,7 @@ class DummyDataset:
     def __getitem__(self, item):
         path = self.paths[item]
         img = cv2.imread(path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if self.mode == 'transmission':
             img_resized = cv2.resize(img, self.new_size)
