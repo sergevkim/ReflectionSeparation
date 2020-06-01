@@ -25,7 +25,12 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     }
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
+        if batch_index == 100:
+            print('!', subject)
+            print('!!', astigma)
+
         batch = model.prepare_batch(subject, astigma, device, epoch)
+
         losses = model.compute_losses(batch)
 
         loss = losses['full']
@@ -173,6 +178,7 @@ def main():
             optimizer=optimizer,
             device=device,
             epoch=epoch)
+        print(psnr_train)
         writer_train.add_scalar('psnr/train', psnr_train, epoch)
 
         if args.save_model:
