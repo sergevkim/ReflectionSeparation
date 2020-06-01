@@ -14,7 +14,6 @@ from utils.data import DummyDataset, make_dataloaders, filter_filenames, all_tra
 
 def train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch):
     time_start = time.time()
-    writer = SummaryWriter("{}/tensorboard/epoch_{}".format(args.logs_path, epoch))
     model.train()
 
     dataloader_full = zip(train_loader_transmission, train_loader_reflection)
@@ -45,9 +44,6 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         optimizer.step()
 
         if batch_index % 100 == 0:
-            if True: #TODO args.logs or always?
-                writer.add_scalar('gradnorm/train', float(torch.norm(model.conv_head_1_6.weight.grad)), batch_index)
-                writer.add_scalar('Loss/train', psnr_t, batch_index)
             if args.verbose:
                 print("BATCH {}".format(batch_index))
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
@@ -67,11 +63,16 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
                     epoch)
                 torch.save(checkpoint_dict, checkpoint_path)
 
-    print("The training epoch ended in {} seconds,\nmean mse_t: {},\nmean psnr_t: {}".format(
+    mean_mse = sum(history['mse_t']) / len(history['mse_t'])
+    mean_psnr = sum(history['psnr_t']) / len(history['psnr_t'])
+
+    template = "The training epoch ended in {} seconds,\nmean mse_t: {},\nmean psnr_t: {}"
+    print(template.format(
         time.time() - time_start,
-        sum(history['mse_t']) / len(history['mse_t']),
-        sum(history['psnr_t']) / len(history['psnr_t'])))
-    writer.close()
+        mean_mse,
+        mean_psnr))
+
+    return mean_mse, mean_psnr
 
 
 def val(args, model, test_loader_transmission, test_loader_reflection, device, epoch):
@@ -107,14 +108,15 @@ def val(args, model, test_loader_transmission, test_loader_reflection, device, e
                 print("mse_t: {}, mse_r: {}".format(mse_t, mse_r))
                 print("psnr_t: {}, psnr_r: {}".format(psnr_t, psnr_r))
 
+    mean_mse = sum(history['mse_t']) / len(history['mse_t'])
+    mean_psnr = sum(history['psnr_t']) / len(history['psnr_r'])
+
     print("Validation ended in {} seconds,\nmean mse_t: {},\nmean psnr_t: {}".format(
         time.time() - time_start,
-        sum(history['mse_t']) / len(history['mse_t']),
-        sum(history['psnr_t']) / len(history['psnr_r'])))
-    print(
-        sum(history['mse_t']) / len(history['mse_t']),
-        sum(history['psnr_t']) / len(history['psnr_r']),
-        file=open("smth.txt", 'w'))
+        mean_mse,
+        mean_psnr))
+
+    return mean_mse, mean_psnr
 
 
 def main():
@@ -141,6 +143,9 @@ def main():
         optimizer = torch.optim.Adam(model.parameters(), lr=3e-4) #TODO lr schedule
         epoch_start = 1
 
+    writer_train = SummaryWriter("{}/tensorboard/train".format(args.logs_path))
+    writer_val = SummaryWriter("{}/tensorboard/train".format(args.logs_path))
+
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
         print("======== EPOCH {} ========".format(epoch))
         dataloaders = make_dataloaders(args, epoch)
@@ -149,9 +154,27 @@ def main():
         test_loader_transmission = dataloaders['test_loader_transmission']
         test_loader_reflection = dataloaders['test_loader_reflection']
 
-        val(args, model, test_loader_transmission, test_loader_reflection, device, epoch)
-        print("--------------------------")
-        train(args, model, train_loader_transmission, train_loader_reflection, optimizer, device, epoch)
+        print("VALIDATIONVALIDATIONVALIDATION")
+        mse_val, psnr_val = val(
+            args=args,
+            model=model,
+            test_loader_transmission=test_loader_transmission,
+            test_loader_reflection=test_loader_reflection,
+            device=device,
+            epoch=epoch)
+        writer_val.add_scalar('psnr/val', psnr_val, epoch)
+
+        print("TRAINTRAINTRAINTRAINTRAINTRAIN")
+        mse_train, psnr_train = train(
+            args=args,
+            model=model,
+            train_loader_transmission=train_loader_transmission,
+            train_loader_reflection=train_loader_reflection,
+            optimizer=optimizer,
+            device=device,
+            epoch=epoch)
+        writer_train.add_scalar('psnr/train', psnr_train, epoch)
+
         if args.save_model:
             checkpoint_dict = {
                 'model': model,
