@@ -44,7 +44,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             cv2.imwrite("normal.jpg", out)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
-        print(batch.shape)
+        print(batch['transmission'].shape)
 
         if batch_index == 1:
             out = copy.deepcopy(batch['transmission'][0])
