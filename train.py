@@ -31,7 +31,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             print('1', out.shape, args.color_space)
             out = out.data.numpy()
             print('2', out.shape, args.color_space)
-            out = (255.0 * out[0, ...]).clip(0, 255).astype(np.uint8)
+            out = (255.0 * out).clip(0, 255).astype(np.uint8)
             print('3', out.shape, args.color_space)
             out = out.transpose((1, 2, 0))
             print('4', out.shape, args.color_space)
