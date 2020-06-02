@@ -27,15 +27,15 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
         if batch_index == 100:
-            print('!', subject[0].shape, args.color_space)
-            if args.color_space == 'rgb':
-                out = cv2.cvtColor(subject[0], code=cv2.COLOR_RGB2BGR)
-            elif args.color_space == 'lab':
-                out = cv2.cvtColor(subject[0], code=cv2.COLOR_LAB2BGR)
-
+            out = subject[0]
             out = out.data.numpy()
             out = (255.0 * out[0, ...]).clip(0, 255).astype(np.uint8)
             out = out.transpose((1, 2, 0))
+            print('!', out.shape, args.color_space)
+            if args.color_space == 'rgb':
+                out = cv2.cvtColor(out, code=cv2.COLOR_RGB2BGR)
+            elif args.color_space == 'lab':
+                out = cv2.cvtColor(out, code=cv2.COLOR_LAB2BGR)
             cv2.imwrite("normal.jpg", out)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
