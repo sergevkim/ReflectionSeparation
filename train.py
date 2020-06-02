@@ -47,7 +47,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         if batch_index == 1:
             out = batch['transmission'][0]
             print('1', out.shape, args.color_space)
-            out = out.data.numpy()
+            out = out.cpu().data.numpy()
             print('2', out.shape, args.color_space)
             out = (255.0 * out).clip(0, 255).astype(np.uint8)
             print('3', out.shape, args.color_space)
