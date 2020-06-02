@@ -1,7 +1,7 @@
 import argparse
 import time
 
-import copy #TODO remove
+#import copy #TODO remove
 
 import numpy as np
 import cv2
@@ -28,6 +28,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     }
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
+        '''
         if batch_index == 1:
             out = subject[0]
             print('1', out.shape, args.color_space)
@@ -42,10 +43,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             elif args.color_space == 'lab':
                 out = cv2.cvtColor(out, code=cv2.COLOR_LAB2BGR)
             cv2.imwrite("normal.jpg", out)
-
+        '''
         batch = model.prepare_batch(subject, astigma, device, epoch)
-        print(batch['transmission'].shape)
-
+        #print(batch['transmission'].shape)
+        '''
         if batch_index == 1:
             out = copy.deepcopy(batch['transmission'][0])
             print('!', out[0][0])
@@ -63,7 +64,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             elif args.color_space == 'lab':
                 out = cv2.cvtColor(out, code=cv2.COLOR_LAB2BGR)
             cv2.imwrite("normal_2.jpg", out)
-
+        '''
         losses = model.compute_losses(batch)
 
         loss = losses['full']

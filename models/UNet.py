@@ -186,7 +186,7 @@ class UNet(nn.Module):
             padding=reflection_kernel_size[0] // 2)
 
         transmission = copy.deepcopy(subject)
-        transmission[:, :, :, 0] * alpha
+        transmission[:, 0, :, :] * alpha
 
         synthetic = transmission + reflection
 
