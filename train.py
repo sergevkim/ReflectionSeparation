@@ -43,6 +43,21 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
 
+        if batch_index == 1:
+            out = batch[0]
+            print('1', out.shape, args.color_space)
+            out = out.data.numpy()
+            print('2', out.shape, args.color_space)
+            out = (255.0 * out).clip(0, 255).astype(np.uint8)
+            print('3', out.shape, args.color_space)
+            out = out.transpose((1, 2, 0))
+            print('4', out.shape, args.color_space)
+            if args.color_space == 'rgb':
+                out = cv2.cvtColor(out, code=cv2.COLOR_RGB2BGR)
+            elif args.color_space == 'lab':
+                out = cv2.cvtColor(out, code=cv2.COLOR_LAB2BGR)
+            cv2.imwrite("normal.jpg", out)
+
         losses = model.compute_losses(batch)
 
         loss = losses['full']
