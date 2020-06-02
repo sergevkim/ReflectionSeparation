@@ -28,10 +28,13 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
         if batch_index == 100:
             out = subject[0]
+            print('1', out.shape, args.color_space)
             out = out.data.numpy()
+            print('2', out.shape, args.color_space)
             out = (255.0 * out[0, ...]).clip(0, 255).astype(np.uint8)
+            print('3', out.shape, args.color_space)
             out = out.transpose((1, 2, 0))
-            print('!', out.shape, args.color_space)
+            print('4', out.shape, args.color_space)
             if args.color_space == 'rgb':
                 out = cv2.cvtColor(out, code=cv2.COLOR_RGB2BGR)
             elif args.color_space == 'lab':
