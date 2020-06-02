@@ -1,6 +1,8 @@
 import argparse
 import time
 
+import copy #TODO remove
+
 import numpy as np
 import cv2
 import torch
@@ -45,7 +47,8 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         print(batch['transmission'].shape)
 
         if batch_index == 1:
-            out = batch['transmission'][0]
+            out = copy.deepcopy(batch['transmission'][0])
+            out[:, :, 0] *= 0.5
             print('1', out.shape, args.color_space)
             out = out.cpu().data.numpy()
             print('2', out.shape, args.color_space)
