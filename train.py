@@ -29,10 +29,14 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
         if batch_index == 100:
             print('!', subject[0].shape, args.color_space)
             if args.color_space == 'rgb':
-                cv_normal_bgr = cv2.cvtColor(subject[0], code=cv2.COLOR_RGB2BGR)
+                out = cv2.cvtColor(subject[0], code=cv2.COLOR_RGB2BGR)
             elif args.color_space == 'lab':
-                cv_normal_bgr = cv2.cvtColor(subject[0], code=cv2.COLOR_LAB2BGR)
-            cv2.imwrite("normal.jpg", cv_normal_bgr)
+                out = cv2.cvtColor(subject[0], code=cv2.COLOR_LAB2BGR)
+
+            out = out.data.numpy()
+            out = (255.0 * out[0, ...]).clip(0, 255).astype(np.uint8)
+            out = out.transpose((1, 2, 0))
+            cv2.imwrite("normal.jpg", out)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
 
