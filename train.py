@@ -192,7 +192,7 @@ def main():
         train_loader_reflection = dataloaders['train_loader_reflection']
         test_loader_transmission = dataloaders['test_loader_transmission']
         test_loader_reflection = dataloaders['test_loader_reflection']
-        '''
+
         print("\nVALIDATIONVALIDATIONVALIDATION")
         mse_val, psnr_val = val(
             args=args,
@@ -202,7 +202,7 @@ def main():
             device=device,
             epoch=epoch)
         writer_val.add_scalar('psnr/val', psnr_val, epoch)
-        '''
+
         print("\nTRAINTRAINTRAINTRAINTRAINTRAIN")
         mse_train, psnr_train = train(
             args=args,
