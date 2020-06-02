@@ -57,7 +57,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
                 out = cv2.cvtColor(out, code=cv2.COLOR_RGB2BGR)
             elif args.color_space == 'lab':
                 out = cv2.cvtColor(out, code=cv2.COLOR_LAB2BGR)
-            cv2.imwrite("normal.jpg", out)
+            cv2.imwrite("normal_2.jpg", out)
 
         losses = model.compute_losses(batch)
 

@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import cv2
 
@@ -178,11 +180,14 @@ class UNet(nn.Module):
         ])
         reflection_kernel_2 = torch.Tensor(reflection_kernel_2)
 
-        transmission = subject# * alpha
         reflection = F.conv2d(
             astigma,
             reflection_kernel_2,
             padding=reflection_kernel_size[0] // 2)
+
+        transmission = copy.deepcopy(subject)
+        transmission[:, :, :, 0] * alpha
+
         synthetic = transmission + reflection
 
         output = {
