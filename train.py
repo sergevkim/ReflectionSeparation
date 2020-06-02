@@ -44,11 +44,12 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             cv2.imwrite("normal.jpg", out)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
+        print(batch.shape)
 
         if batch_index == 1:
             out = copy.deepcopy(batch['transmission'][0])
             print('!', out[0][0])
-            out[:, :, 0] *= 0.5
+            out[0, :, :] *= 0.5
             print('!', out[0][0])
             print('1', out.shape, args.color_space)
             out = out.cpu().data.numpy()
