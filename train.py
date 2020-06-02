@@ -42,9 +42,10 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
             cv2.imwrite("normal.jpg", out)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
+        print(batch['transmission'].shape)
 
         if batch_index == 1:
-            out = batch[0]
+            out = batch['transmission'][0]
             print('1', out.shape, args.color_space)
             out = out.data.numpy()
             print('2', out.shape, args.color_space)
