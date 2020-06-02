@@ -26,7 +26,7 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
     }
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
-        if batch_index == 100:
+        if batch_index == 1:
             out = subject[0]
             print('1', out.shape, args.color_space)
             out = out.data.numpy()
@@ -170,7 +170,7 @@ def main():
         train_loader_reflection = dataloaders['train_loader_reflection']
         test_loader_transmission = dataloaders['test_loader_transmission']
         test_loader_reflection = dataloaders['test_loader_reflection']
-
+        '''
         print("\nVALIDATIONVALIDATIONVALIDATION")
         mse_val, psnr_val = val(
             args=args,
@@ -180,7 +180,7 @@ def main():
             device=device,
             epoch=epoch)
         writer_val.add_scalar('psnr/val', psnr_val, epoch)
-
+        '''
         print("\nTRAINTRAINTRAINTRAINTRAINTRAIN")
         mse_train, psnr_train = train(
             args=args,
