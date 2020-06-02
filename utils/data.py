@@ -46,7 +46,8 @@ def make_dataloaders(args, epoch):
         DummyDataset(
             mode='transmission',
             paths=subject_filenames_train,
-            epoch=epoch),
+            epoch=epoch,
+            color_space=args.color_space),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -54,7 +55,8 @@ def make_dataloaders(args, epoch):
         DummyDataset(
             mode='reflection',
             paths=astigma_filenames_train,
-            epoch=epoch),
+            epoch=epoch,
+            color_space=args.color_space),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -62,7 +64,8 @@ def make_dataloaders(args, epoch):
         DummyDataset(
             mode='transmission',
             paths=subject_filenames_test,
-            epoch=epoch),
+            epoch=epoch,
+            color_space=args.color_space),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -70,7 +73,8 @@ def make_dataloaders(args, epoch):
         DummyDataset(
             mode='reflection',
             paths=astigma_filenames_test,
-            epoch=epoch),
+            epoch=epoch,
+            color_space=args.color_space),
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -121,10 +125,12 @@ class DummyDataset:
             mode,
             paths,
             epoch,
+            color_space="rgb",
             new_size=(128, 128)):
         self.mode = mode
         self.paths = paths
         self.epoch = epoch
+        self.color_space = color_space
         self.new_size = new_size
 
     def __len__(self):
@@ -133,13 +139,17 @@ class DummyDataset:
     def __getitem__(self, item):
         path = self.paths[item]
         img = cv2.imread(path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        if self.color_space == 'rgb':
+            img_cvt = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        elif self.color_space == 'lab':
+            img_cvt = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
         if self.mode == 'transmission':
-            img_resized = cv2.resize(img, self.new_size)
+            img_resized = cv2.resize(img_cvt, self.new_size)
             return ToTensor()(img_resized)
         elif self.mode == 'reflection':
-            img_cropped = random_crop(img, (200, 200))
+            img_cropped = random_crop(img_cvt, (200, 200))
             img_resized = cv2.resize(img_cropped, self.new_size)
             return ToTensor()(img_resized)
 

@@ -2,6 +2,7 @@ import argparse
 import time
 
 import numpy as np
+import cv2
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -26,8 +27,12 @@ def train(args, model, train_loader_transmission, train_loader_reflection, optim
 
     for batch_index, (subject, astigma) in enumerate(dataloader_full):
         if batch_index == 100:
-            print('!', subject)
-            print('!!', astigma)
+            print('!', subject[0].shape, args.color_space)
+            if args.color_space == 'rgb':
+                cv_normal_bgr = cv.cvtColor(subject[0], code=cv2.COLOR_RGB2BGR)
+            elif args.color_space == 'lab':
+                cv_normal_bgr = cv.cvtColor(subject[0], code=cv2.COLOR_LAB2BGR)
+            cv2.imwrite("normal.jpg", cv_normal_bgr)
 
         batch = model.prepare_batch(subject, astigma, device, epoch)
 
@@ -152,14 +157,14 @@ def main():
     writer_val = SummaryWriter("{}/tensorboard/train".format(args.logs_path))
 
     for epoch in range(epoch_start, epoch_start + args.n_epochs):
-        print("======== EPOCH {} ========".format(epoch))
+        print("\n======== EPOCH {} ========".format(epoch))
         dataloaders = make_dataloaders(args, epoch)
         train_loader_transmission = dataloaders['train_loader_transmission']
         train_loader_reflection = dataloaders['train_loader_reflection']
         test_loader_transmission = dataloaders['test_loader_transmission']
         test_loader_reflection = dataloaders['test_loader_reflection']
 
-        print("VALIDATIONVALIDATIONVALIDATION")
+        print("\nVALIDATIONVALIDATIONVALIDATION")
         mse_val, psnr_val = val(
             args=args,
             model=model,
@@ -169,7 +174,7 @@ def main():
             epoch=epoch)
         writer_val.add_scalar('psnr/val', psnr_val, epoch)
 
-        print("TRAINTRAINTRAINTRAINTRAINTRAIN")
+        print("\nTRAINTRAINTRAINTRAINTRAINTRAIN")
         mse_train, psnr_train = train(
             args=args,
             model=model,
