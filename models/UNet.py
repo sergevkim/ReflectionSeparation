@@ -97,13 +97,13 @@ class UNet(nn.Module):
         up = F.relu(up)
         up = self.conv_up_5(legacy_1 + up)
         up = F.relu(up)
-        up = self.conv_up_6(up)
-        up = F.relu(x - up)
+        up_r = self.conv_up_6(up)   # reflection
+        up_t = F.relu(x - up_r)     # transmission
 
-        return up
+        return up_t, up_r
 
 
-    def head_1(self, x):
+    def head_t(self, x):    # transmission head
         x = self.conv_head_1_1(x)
         x = F.relu(x)
         x = self.conv_head_1_2(x)
@@ -119,7 +119,7 @@ class UNet(nn.Module):
         return x
 
 
-    def head_2(self, x):
+    def head_r(self, x):    # reflection head
         x = self.conv_head_2_1(x)
         x = F.relu(x)
         x = self.conv_head_2_2(x)
@@ -137,9 +137,9 @@ class UNet(nn.Module):
 
     def forward(self, x):
         intro_output = self.intro(x)
-        body_output = self.body(intro_output)
-        transmission = self.head_1(body_output)
-        reflection = self.head_2(body_output)
+        body_output_t, body_output_r = self.body(intro_output)  # reflection/transmission
+        transmission = self.head_t(body_output_t)
+        reflection = self.head_r(body_output_r)
 
         output = {
             'transmission': transmission,
